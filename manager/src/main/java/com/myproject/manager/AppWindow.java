@@ -79,7 +79,7 @@ public class AppWindow {
 	private void initialize() {
 		
 		frame = new JFrame();
-		frame.setBounds(100, 100, 829, 522);
+		frame.setBounds(100, 100, 881, 626);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0};
@@ -99,24 +99,24 @@ public class AppWindow {
 		tabbedPane.addTab("Wydatki", null, panelExpenses, null);
 		GridBagLayout gbl_panelExpenses = new GridBagLayout();
 		gbl_panelExpenses.columnWidths = new int[]{0, 0, 0, 0};
-		gbl_panelExpenses.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
+		gbl_panelExpenses.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		gbl_panelExpenses.columnWeights = new double[]{0.0, 1.0, 1.0, Double.MIN_VALUE};
-		gbl_panelExpenses.rowWeights = new double[]{1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panelExpenses.rowWeights = new double[]{1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		panelExpenses.setLayout(gbl_panelExpenses);
 		
 		JPanel panelSearchOptions = new JPanel();
 		GridBagConstraints gbc_panelSearchOptions = new GridBagConstraints();
-		gbc_panelSearchOptions.gridheight = 2;
+		gbc_panelSearchOptions.gridheight = 3;
 		gbc_panelSearchOptions.fill = GridBagConstraints.HORIZONTAL;
 		gbc_panelSearchOptions.insets = new Insets(5, 5, 5, 5);
 		gbc_panelSearchOptions.gridx = 1;
-		gbc_panelSearchOptions.gridy = 1;
+		gbc_panelSearchOptions.gridy = 0;
 		panelExpenses.add(panelSearchOptions, gbc_panelSearchOptions);
 		GridBagLayout gbl_panelSearchOptions = new GridBagLayout();
 		gbl_panelSearchOptions.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
-		gbl_panelSearchOptions.rowHeights = new int[]{0, 0, 0, 0};
+		gbl_panelSearchOptions.rowHeights = new int[]{0, 0, 0, 0, 0};
 		gbl_panelSearchOptions.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		gbl_panelSearchOptions.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panelSearchOptions.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		panelSearchOptions.setLayout(gbl_panelSearchOptions);
 		
 		JButton btnSearch = new JButton("Search");
@@ -188,8 +188,8 @@ public class AppWindow {
 		
 		JPanel panelMenu = new JPanel();
 		GridBagConstraints gbc_panelMenu = new GridBagConstraints();
-		gbc_panelMenu.gridheight = 3;
 		gbc_panelMenu.insets = new Insets(0, 0, 5, 0);
+		gbc_panelMenu.gridheight = 3;
 		gbc_panelMenu.gridx = 6;
 		gbc_panelMenu.gridy = 0;
 		panelSearchOptions.add(panelMenu, gbc_panelMenu);
@@ -218,7 +218,7 @@ public class AppWindow {
 		JLabel lblOptionDateMin = new JLabel("Data zakupu od:");
 		lblOptionDateMin.setHorizontalAlignment(SwingConstants.RIGHT);
 		GridBagConstraints gbc_lblOptionDateMin = new GridBagConstraints();
-		gbc_lblOptionDateMin.insets = new Insets(0, 0, 0, 5);
+		gbc_lblOptionDateMin.insets = new Insets(0, 0, 5, 5);
 		gbc_lblOptionDateMin.gridx = 1;
 		gbc_lblOptionDateMin.gridy = 2;
 		panelSearchOptions.add(lblOptionDateMin, gbc_lblOptionDateMin);
@@ -229,14 +229,14 @@ public class AppWindow {
 		GridBagConstraints gbc_spinnerDateMin = new GridBagConstraints();
 		gbc_spinnerDateMin.fill = GridBagConstraints.HORIZONTAL;
 		gbc_spinnerDateMin.weightx = 100.0;
-		gbc_spinnerDateMin.insets = new Insets(0, 0, 0, 5);
+		gbc_spinnerDateMin.insets = new Insets(0, 0, 5, 5);
 		gbc_spinnerDateMin.gridx = 2;
 		gbc_spinnerDateMin.gridy = 2;
 		panelSearchOptions.add(spinnerDateMin, gbc_spinnerDateMin);
 		
 		JLabel lblOptionDateMax = new JLabel("do");
 		GridBagConstraints gbc_lblOptionDateMax = new GridBagConstraints();
-		gbc_lblOptionDateMax.insets = new Insets(0, 0, 0, 5);
+		gbc_lblOptionDateMax.insets = new Insets(0, 0, 5, 5);
 		gbc_lblOptionDateMax.gridx = 4;
 		gbc_lblOptionDateMax.gridy = 2;
 		panelSearchOptions.add(lblOptionDateMax, gbc_lblOptionDateMax);
@@ -247,10 +247,78 @@ public class AppWindow {
 		spinnerDateMax.setValue(new Date());
 		GridBagConstraints gbc_spinnerDateMax = new GridBagConstraints();
 		gbc_spinnerDateMax.fill = GridBagConstraints.HORIZONTAL;
-		gbc_spinnerDateMax.insets = new Insets(0, 0, 0, 5);
+		gbc_spinnerDateMax.insets = new Insets(0, 0, 5, 5);
 		gbc_spinnerDateMax.gridx = 5;
 		gbc_spinnerDateMax.gridy = 2;
 		panelSearchOptions.add(spinnerDateMax, gbc_spinnerDateMax);
+		
+		JPanel panelSummary = new JPanel();
+		GridBagConstraints gbc_panelSummary = new GridBagConstraints();
+		gbc_panelSummary.fill = GridBagConstraints.HORIZONTAL;
+		gbc_panelSummary.gridwidth = 5;
+		gbc_panelSummary.insets = new Insets(0, 0, 0, 5);
+		gbc_panelSummary.gridx = 1;
+		gbc_panelSummary.gridy = 3;
+		panelSearchOptions.add(panelSummary, gbc_panelSummary);
+		GridBagLayout gbl_panelSummary = new GridBagLayout();
+		gbl_panelSummary.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		gbl_panelSummary.rowHeights = new int[]{0, 0};
+		gbl_panelSummary.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, Double.MIN_VALUE};
+		gbl_panelSummary.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+		panelSummary.setLayout(gbl_panelSummary);
+		
+		JLabel lblExpensesSummary = new JLabel("Suma wydatków:");
+		GridBagConstraints gbc_lblExpensesSummary = new GridBagConstraints();
+		gbc_lblExpensesSummary.anchor = GridBagConstraints.WEST;
+		gbc_lblExpensesSummary.insets = new Insets(0, 0, 0, 5);
+		gbc_lblExpensesSummary.gridx = 1;
+		gbc_lblExpensesSummary.gridy = 0;
+		panelSummary.add(lblExpensesSummary, gbc_lblExpensesSummary);
+		
+		JLabel lblExpensesSummaryValue = new JLabel("*");
+		GridBagConstraints gbc_lblExpensesSummaryValue = new GridBagConstraints();
+		gbc_lblExpensesSummaryValue.gridwidth = 2;
+		gbc_lblExpensesSummaryValue.insets = new Insets(0, 0, 0, 5);
+		gbc_lblExpensesSummaryValue.gridx = 2;
+		gbc_lblExpensesSummaryValue.gridy = 0;
+		panelSummary.add(lblExpensesSummaryValue, gbc_lblExpensesSummaryValue);
+		
+		JLabel lblExpensesFindRows = new JLabel("Znalezione wiersze:");
+		GridBagConstraints gbc_lblExpensesFindRows = new GridBagConstraints();
+		gbc_lblExpensesFindRows.anchor = GridBagConstraints.EAST;
+		gbc_lblExpensesFindRows.gridwidth = 2;
+		gbc_lblExpensesFindRows.insets = new Insets(0, 0, 0, 5);
+		gbc_lblExpensesFindRows.gridx = 6;
+		gbc_lblExpensesFindRows.gridy = 0;
+		panelSummary.add(lblExpensesFindRows, gbc_lblExpensesFindRows);
+		
+		Label lblExpensesFindRowsValue = new Label("***");
+		lblExpensesFindRowsValue.setText(String.valueOf(hibernateDao.printRows()));
+		GridBagConstraints gbc_lblExpensesFindRowsValue = new GridBagConstraints();
+		gbc_lblExpensesFindRowsValue.anchor = GridBagConstraints.WEST;
+		gbc_lblExpensesFindRowsValue.gridwidth = 2;
+		gbc_lblExpensesFindRowsValue.insets = new Insets(0, 0, 0, 5);
+		gbc_lblExpensesFindRowsValue.gridx = 8;
+		gbc_lblExpensesFindRowsValue.gridy = 0;
+		panelSummary.add(lblExpensesFindRowsValue, gbc_lblExpensesFindRowsValue);
+		
+		JLabel lblExpensesAllProducts = new JLabel("Produktów w bazie:");
+		GridBagConstraints gbc_lblExpensesAllProducts = new GridBagConstraints();
+		gbc_lblExpensesAllProducts.anchor = GridBagConstraints.EAST;
+		gbc_lblExpensesAllProducts.insets = new Insets(0, 0, 0, 5);
+		gbc_lblExpensesAllProducts.gridx = 10;
+		gbc_lblExpensesAllProducts.gridy = 0;
+		panelSummary.add(lblExpensesAllProducts, gbc_lblExpensesAllProducts);
+		
+		JLabel lblExpensesAllProductsValue = new JLabel("***");
+		lblExpensesAllProductsValue.setText(String.valueOf(hibernateDao.rowCountAll()));
+		GridBagConstraints gbc_lblExpensesAllProductsValue = new GridBagConstraints();
+		gbc_lblExpensesAllProductsValue.insets = new Insets(0, 0, 0, 5);
+		gbc_lblExpensesAllProductsValue.anchor = GridBagConstraints.WEST;
+		gbc_lblExpensesAllProductsValue.gridwidth = 2;
+		gbc_lblExpensesAllProductsValue.gridx = 11;
+		gbc_lblExpensesAllProductsValue.gridy = 0;
+		panelSummary.add(lblExpensesAllProductsValue, gbc_lblExpensesAllProductsValue);
 		
 		JScrollPane scrollPane = new JScrollPane();
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
@@ -285,74 +353,8 @@ public class AppWindow {
 		
 		JPanel panelProductEdit = new JPanel();
 		panelProductEdit.setVisible(false);
-		
-		JPanel panelSummary = new JPanel();
-		GridBagConstraints gbc_panelSummary = new GridBagConstraints();
-		gbc_panelSummary.gridwidth = 3;
-		gbc_panelSummary.insets = new Insets(0, 0, 5, 5);
-		gbc_panelSummary.fill = GridBagConstraints.BOTH;
-		gbc_panelSummary.gridx = 0;
-		gbc_panelSummary.gridy = 5;
-		panelExpenses.add(panelSummary, gbc_panelSummary);
-		GridBagLayout gbl_panelSummary = new GridBagLayout();
-		gbl_panelSummary.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gbl_panelSummary.rowHeights = new int[]{0, 0};
-		gbl_panelSummary.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, Double.MIN_VALUE};
-		gbl_panelSummary.rowWeights = new double[]{0.0, Double.MIN_VALUE};
-		panelSummary.setLayout(gbl_panelSummary);
-		
-		JLabel lblExpensesSummary = new JLabel("Suma wydatków:");
-		GridBagConstraints gbc_lblExpensesSummary = new GridBagConstraints();
-		gbc_lblExpensesSummary.anchor = GridBagConstraints.EAST;
-		gbc_lblExpensesSummary.insets = new Insets(0, 0, 0, 5);
-		gbc_lblExpensesSummary.gridx = 0;
-		gbc_lblExpensesSummary.gridy = 0;
-		panelSummary.add(lblExpensesSummary, gbc_lblExpensesSummary);
-		
-		JLabel lblExpensesSummaryValue = new JLabel("*");
-		GridBagConstraints gbc_lblExpensesSummaryValue = new GridBagConstraints();
-		gbc_lblExpensesSummaryValue.gridwidth = 3;
-		gbc_lblExpensesSummaryValue.insets = new Insets(0, 0, 0, 5);
-		gbc_lblExpensesSummaryValue.gridx = 1;
-		gbc_lblExpensesSummaryValue.gridy = 0;
-		panelSummary.add(lblExpensesSummaryValue, gbc_lblExpensesSummaryValue);
-		
-		JLabel lblExpensesFindRows = new JLabel("Znalezione wiersze:");
-		GridBagConstraints gbc_lblExpensesFindRows = new GridBagConstraints();
-		gbc_lblExpensesFindRows.anchor = GridBagConstraints.EAST;
-		gbc_lblExpensesFindRows.gridwidth = 2;
-		gbc_lblExpensesFindRows.insets = new Insets(0, 0, 0, 5);
-		gbc_lblExpensesFindRows.gridx = 6;
-		gbc_lblExpensesFindRows.gridy = 0;
-		panelSummary.add(lblExpensesFindRows, gbc_lblExpensesFindRows);
-		
-		Label lblExpensesFindRowsValue = new Label("***");
-		lblExpensesFindRowsValue.setText(String.valueOf(hibernateDao.printRows()));
-		GridBagConstraints gbc_lblExpensesFindRowsValue = new GridBagConstraints();
-		gbc_lblExpensesFindRowsValue.anchor = GridBagConstraints.WEST;
-		gbc_lblExpensesFindRowsValue.gridwidth = 2;
-		gbc_lblExpensesFindRowsValue.insets = new Insets(0, 0, 0, 5);
-		gbc_lblExpensesFindRowsValue.gridx = 8;
-		gbc_lblExpensesFindRowsValue.gridy = 0;
-		panelSummary.add(lblExpensesFindRowsValue, gbc_lblExpensesFindRowsValue);
-		
-		JLabel lblExpensesAllProducts = new JLabel("Produktów w bazie:");
-		GridBagConstraints gbc_lblExpensesAllProducts = new GridBagConstraints();
-		gbc_lblExpensesAllProducts.anchor = GridBagConstraints.EAST;
-		gbc_lblExpensesAllProducts.insets = new Insets(0, 0, 0, 5);
-		gbc_lblExpensesAllProducts.gridx = 11;
-		gbc_lblExpensesAllProducts.gridy = 0;
-		panelSummary.add(lblExpensesAllProducts, gbc_lblExpensesAllProducts);
-		
-		JLabel lblExpensesAllProductsValue = new JLabel("***");
-		lblExpensesAllProductsValue.setText(String.valueOf(hibernateDao.rowCountAll()));
-		GridBagConstraints gbc_lblExpensesAllProductsValue = new GridBagConstraints();
-		gbc_lblExpensesAllProductsValue.anchor = GridBagConstraints.WEST;
-		gbc_lblExpensesAllProductsValue.gridwidth = 2;
-		gbc_lblExpensesAllProductsValue.gridx = 12;
-		gbc_lblExpensesAllProductsValue.gridy = 0;
-		panelSummary.add(lblExpensesAllProductsValue, gbc_lblExpensesAllProductsValue);
 		GridBagConstraints gbc_panelProductEdit = new GridBagConstraints();
+		gbc_panelProductEdit.gridheight = 2;
 		gbc_panelProductEdit.fill = GridBagConstraints.HORIZONTAL;
 		gbc_panelProductEdit.gridwidth = 4;
 		gbc_panelProductEdit.weightx = 100.0;
@@ -361,10 +363,10 @@ public class AppWindow {
 		gbc_panelProductEdit.gridy = 6;
 		panelExpenses.add(panelProductEdit, gbc_panelProductEdit);
 		GridBagLayout gbl_panelProductEdit = new GridBagLayout();
-		gbl_panelProductEdit.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gbl_panelProductEdit.rowHeights = new int[]{0, 0, 0, 0, 0, 0};
-		gbl_panelProductEdit.columnWeights = new double[]{0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, Double.MIN_VALUE};
-		gbl_panelProductEdit.rowWeights = new double[]{0.0, 0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
+		gbl_panelProductEdit.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		gbl_panelProductEdit.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
+		gbl_panelProductEdit.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, Double.MIN_VALUE};
+		gbl_panelProductEdit.rowWeights = new double[]{0.0, 0.0, 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE};
 		panelProductEdit.setLayout(gbl_panelProductEdit);
 		
 		JLabel lblPanelEdycjiProduktu = new JLabel("Panel edycji produktu:");
@@ -372,19 +374,9 @@ public class AppWindow {
 		GridBagConstraints gbc_lblPanelEdycjiProduktu = new GridBagConstraints();
 		gbc_lblPanelEdycjiProduktu.anchor = GridBagConstraints.WEST;
 		gbc_lblPanelEdycjiProduktu.insets = new Insets(0, 0, 5, 5);
-		gbc_lblPanelEdycjiProduktu.gridx = 0;
+		gbc_lblPanelEdycjiProduktu.gridx = 2;
 		gbc_lblPanelEdycjiProduktu.gridy = 0;
 		panelProductEdit.add(lblPanelEdycjiProduktu, gbc_lblPanelEdycjiProduktu);
-		
-		JButton btnEditPanelClose = new JButton("Zakończ edycję");
-		
-		GridBagConstraints gbc_btnEditPanelClose = new GridBagConstraints();
-		gbc_btnEditPanelClose.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnEditPanelClose.gridwidth = 4;
-		gbc_btnEditPanelClose.insets = new Insets(0, 0, 5, 5);
-		gbc_btnEditPanelClose.gridx = 0;
-		gbc_btnEditPanelClose.gridy = 1;
-		panelProductEdit.add(btnEditPanelClose, gbc_btnEditPanelClose);
 		
 		
 		JLabel lblProductName = new JLabel("Nazwa produktu:");
@@ -392,7 +384,7 @@ public class AppWindow {
 		gbc_lblProductName.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lblProductName.anchor = GridBagConstraints.EAST;
 		gbc_lblProductName.insets = new Insets(0, 0, 5, 5);
-		gbc_lblProductName.gridx = 0;
+		gbc_lblProductName.gridx = 2;
 		gbc_lblProductName.gridy = 2;
 		panelProductEdit.add(lblProductName, gbc_lblProductName);
 		
@@ -400,7 +392,7 @@ public class AppWindow {
 		GridBagConstraints gbc_textPdoductName = new GridBagConstraints();
 		gbc_textPdoductName.insets = new Insets(0, 0, 5, 5);
 		gbc_textPdoductName.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textPdoductName.gridx = 1;
+		gbc_textPdoductName.gridx = 3;
 		gbc_textPdoductName.gridy = 2;
 		panelProductEdit.add(textPdoductName, gbc_textPdoductName);
 		textPdoductName.setColumns(10);
@@ -410,7 +402,7 @@ public class AppWindow {
 		gbc_lblPrice.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lblPrice.anchor = GridBagConstraints.EAST;
 		gbc_lblPrice.insets = new Insets(0, 0, 5, 5);
-		gbc_lblPrice.gridx = 3;
+		gbc_lblPrice.gridx = 5;
 		gbc_lblPrice.gridy = 2;
 		panelProductEdit.add(lblPrice, gbc_lblPrice);
 		
@@ -419,7 +411,7 @@ public class AppWindow {
 		GridBagConstraints gbc_spinnerPrice = new GridBagConstraints();
 		gbc_spinnerPrice.fill = GridBagConstraints.HORIZONTAL;
 		gbc_spinnerPrice.insets = new Insets(0, 0, 5, 5);
-		gbc_spinnerPrice.gridx = 4;
+		gbc_spinnerPrice.gridx = 7;
 		gbc_spinnerPrice.gridy = 2;
 		panelProductEdit.add(spinnerPrice, gbc_spinnerPrice);
 		
@@ -427,7 +419,7 @@ public class AppWindow {
 		GridBagConstraints gbc_lblPurchaseDate = new GridBagConstraints();
 		gbc_lblPurchaseDate.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lblPurchaseDate.insets = new Insets(0, 0, 5, 5);
-		gbc_lblPurchaseDate.gridx = 6;
+		gbc_lblPurchaseDate.gridx = 9;
 		gbc_lblPurchaseDate.gridy = 2;
 		panelProductEdit.add(lblPurchaseDate, gbc_lblPurchaseDate);
 		
@@ -438,7 +430,7 @@ public class AppWindow {
 		gbc_spinnerDate.weightx = 100.0;
 		gbc_spinnerDate.fill = GridBagConstraints.HORIZONTAL;
 		gbc_spinnerDate.insets = new Insets(0, 0, 5, 5);
-		gbc_spinnerDate.gridx = 7;
+		gbc_spinnerDate.gridx = 10;
 		gbc_spinnerDate.gridy = 2;
 		panelProductEdit.add(spinnerDate, gbc_spinnerDate);
 		
@@ -447,7 +439,7 @@ public class AppWindow {
 		gbc_lblShop.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lblShop.anchor = GridBagConstraints.EAST;
 		gbc_lblShop.insets = new Insets(0, 0, 5, 5);
-		gbc_lblShop.gridx = 0;
+		gbc_lblShop.gridx = 2;
 		gbc_lblShop.gridy = 3;
 		panelProductEdit.add(lblShop, gbc_lblShop);
 		
@@ -455,7 +447,7 @@ public class AppWindow {
 		GridBagConstraints gbc_textShop = new GridBagConstraints();
 		gbc_textShop.insets = new Insets(0, 0, 5, 5);
 		gbc_textShop.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textShop.gridx = 1;
+		gbc_textShop.gridx = 3;
 		gbc_textShop.gridy = 3;
 		panelProductEdit.add(textShop, gbc_textShop);
 		textShop.setColumns(10);
@@ -464,7 +456,7 @@ public class AppWindow {
 		gbc_lblDescription.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lblDescription.anchor = GridBagConstraints.EAST;
 		gbc_lblDescription.insets = new Insets(0, 0, 5, 5);
-		gbc_lblDescription.gridx = 3;
+		gbc_lblDescription.gridx = 5;
 		gbc_lblDescription.gridy = 3;
 		panelProductEdit.add(lblDescription, gbc_lblDescription);
 		
@@ -474,7 +466,7 @@ public class AppWindow {
 		gbc_textProductDescription.gridwidth = 4;
 		gbc_textProductDescription.insets = new Insets(0, 0, 5, 5);
 		gbc_textProductDescription.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textProductDescription.gridx = 4;
+		gbc_textProductDescription.gridx = 7;
 		gbc_textProductDescription.gridy = 3;
 		panelProductEdit.add(textProductDescription, gbc_textProductDescription);
 		textProductDescription.setColumns(10);
@@ -485,9 +477,23 @@ public class AppWindow {
 		gbc_btnAddProduct.fill = GridBagConstraints.HORIZONTAL;
 		gbc_btnAddProduct.gridwidth = 4;
 		gbc_btnAddProduct.insets = new Insets(0, 0, 0, 5);
-		gbc_btnAddProduct.gridx = 0;
+		gbc_btnAddProduct.gridx = 2;
 		gbc_btnAddProduct.gridy = 4;
 		panelProductEdit.add(btnAddProduct, gbc_btnAddProduct);
+		
+		JButton btnEditPanelClose = new JButton("Zakończ edycję");
+		GridBagConstraints gbc_btnEditPanelClose = new GridBagConstraints();
+		gbc_btnEditPanelClose.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnEditPanelClose.gridwidth = 9;
+		gbc_btnEditPanelClose.insets = new Insets(0, 0, 0, 5);
+		gbc_btnEditPanelClose.gridx = 2;
+		gbc_btnEditPanelClose.gridy = 5;
+		panelProductEdit.add(btnEditPanelClose, gbc_btnEditPanelClose);
+		
+		btnEditPanelClose.addActionListener(e->{
+			panelProductEdit.setVisible(false);
+			panelSearchOptions.setVisible(true);
+		});
 		
 		JButton btnRemoveProduct = new JButton("Usuń produkt");
 		GridBagConstraints gbc_btnRemoveProduct = new GridBagConstraints();
@@ -495,7 +501,7 @@ public class AppWindow {
 		gbc_btnRemoveProduct.gridwidth = 4;
 		gbc_btnRemoveProduct.fill = GridBagConstraints.HORIZONTAL;
 		gbc_btnRemoveProduct.insets = new Insets(0, 0, 0, 5);
-		gbc_btnRemoveProduct.gridx = 4;
+		gbc_btnRemoveProduct.gridx = 7;
 		gbc_btnRemoveProduct.gridy = 4;
 		panelProductEdit.add(btnRemoveProduct, gbc_btnRemoveProduct);
 		
@@ -546,11 +552,6 @@ public class AppWindow {
 			btnEdit.addActionListener(e->{
 				panelProductEdit.setVisible(true);
 				panelSearchOptions.setVisible(false);;
-			});
-			
-			btnEditPanelClose.addActionListener(e->{
-				panelProductEdit.setVisible(false);
-				panelSearchOptions.setVisible(true);
 			});
 			
 		JPanel panel_1 = new JPanel();
