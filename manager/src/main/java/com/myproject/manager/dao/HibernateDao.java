@@ -4,11 +4,13 @@ package com.myproject.manager.dao;
 import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
-
+import java.util.Properties;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import org.apache.tomcat.dbcp.dbcp2.BasicDataSource;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
@@ -16,8 +18,7 @@ import org.hibernate.search.exception.EmptyQueryException;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
-import org.w3c.dom.stylesheets.LinkStyle;
-
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import com.myproject.manager.api.Dao;
 import com.myproject.manager.pojo.Product;
 import com.myproject.manager.pojo.Shop;
@@ -25,13 +26,15 @@ import com.myproject.manager.pojo.Shop;
 
 
 public class HibernateDao implements Dao{
-	@Autowired
-	private HibernateTransactionManager transactionManager;
+	
 	@Autowired
 	private DefaultTableModel jTableModel;
+	@Autowired
+	private HibernateTransactionManager transactionManager;
 	private Session session=null;
 	private FullTextSession fullTextSession=null;
 	private double  expensesSummary=0;
+	private String test;
 	public HibernateDao() {}
 	
 	private void  setJTableModelDataFromQueryResult(ListIterator<?> listIterator) {
@@ -76,7 +79,9 @@ public class HibernateDao implements Dao{
 			JOptionPane.showMessageDialog(null,e.getMessage()+"\n"+e.getCause(),"Błąd ",JOptionPane.ERROR_MESSAGE);
 		}
 		finally {
-			session.close();
+			if(session!=null) {
+				session.close();
+			}
 			
 		}
 		
@@ -118,7 +123,9 @@ public class HibernateDao implements Dao{
 		}
 		finally {
 	
-			session.close();
+			if(session!=null) {
+				session.close();
+			}
 			
 		}
 		
@@ -144,7 +151,9 @@ public class HibernateDao implements Dao{
 			JOptionPane.showMessageDialog(null,e.getMessage()+"\n"+e.getCause(),"Błąd ",JOptionPane.ERROR_MESSAGE);
 		}
 		finally {
-			session.close();
+			if(session!=null) {
+				session.close();
+			}
 			
 		}
 		
@@ -170,7 +179,10 @@ public class HibernateDao implements Dao{
 			JOptionPane.showMessageDialog(null,e.getMessage()+"\n"+e.getCause(),"Błąd ",JOptionPane.ERROR_MESSAGE);
 		}
 		finally {
-			session.close();
+			if(session!=null) {
+				session.close();
+			}
+			
 			
 		}
 		return resultCount;
@@ -181,7 +193,10 @@ public class HibernateDao implements Dao{
 	public int search(String search,double minPrice,double maxPrice,Date minDate,Date maxDate) {
 		int resultCount=0;
 		try {
-			session = transactionManager.getSessionFactory().openSession();		
+			test = ((BasicDataSource)transactionManager.getDataSource()).getPassword();
+			session = transactionManager.getSessionFactory().openSession();	
+			
+			
 			fullTextSession = Search.getFullTextSession(session);
 			fullTextSession.createIndexer().startAndWait();
 			fullTextSession.beginTransaction();		
@@ -255,8 +270,10 @@ public class HibernateDao implements Dao{
 			JOptionPane.showMessageDialog(null,"Nie znaleziono szukanego wyrażenia","Błąd wyszukiwania",JOptionPane.PLAIN_MESSAGE);
 		}
 		finally {
+			if(fullTextSession!=null) {
+				fullTextSession.close();
+			}
 			
-			fullTextSession.close();
 			
 		}
 		return resultCount;
@@ -279,7 +296,9 @@ public class HibernateDao implements Dao{
 			JOptionPane.showMessageDialog(null,e.getMessage()+"\n"+e.getCause(),"Błąd ",JOptionPane.ERROR_MESSAGE);
 		}
 		finally {
-			session.close();
+			if(session!=null) {
+				session.close();
+			}
 		}
 		return rowCount;
 	}
@@ -287,6 +306,27 @@ public class HibernateDao implements Dao{
 	@Override
 	public double getExpensesSummary() {
 		return expensesSummary;
+	}
+
+	@Override
+	public  String login(String user, String password, String database) {
+		BasicDataSource newDataSource =  new BasicDataSource();
+		newDataSource.setUsername(user);
+		newDataSource.setPassword(password);
+		newDataSource.setUrl(database);
+		
+		
+		
+		String connectionInfo = newDataSource.getUrl() +" "+ newDataSource.getUsername() +" "+ newDataSource.getPassword() ;
+		return connectionInfo;
+				
+		
+	}
+
+	@Override
+	public String test() {
+		// TODO Auto-generated method stub
+		return this.test;
 	}
 
 

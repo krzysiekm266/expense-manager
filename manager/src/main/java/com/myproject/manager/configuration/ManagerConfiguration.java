@@ -18,14 +18,15 @@ public class ManagerConfiguration {
 	
 	@Bean
     public LocalSessionFactoryBean sessionFactory() {
+	
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
         sessionFactory.setPackagesToScan( "com.myproject.manager.pojo"  );
         sessionFactory.setDataSource(dataSource());
         sessionFactory.setHibernateProperties(hibernateProperties());
        
- 
         return sessionFactory;
     }
+	
 	
 	private final Properties hibernateProperties() {
 	        Properties hibernateProperties = new Properties();
@@ -33,7 +34,7 @@ public class ManagerConfiguration {
 	        hibernateProperties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
 	        hibernateProperties.setProperty("hibernate.show_sql", "true");
 	        hibernateProperties.setProperty("hibernate.id.new_generator_mappings", "false");
-	        //for hibernate seach
+	        //for hibernate search
 	        hibernateProperties.setProperty("hibernate.search.default.directory_provider", "filesystem");
 	        hibernateProperties.setProperty("hibernate.search.default.indexBase", "target/luceneIndex");
 	        hibernateProperties.setProperty("hibernate.search.lucene_version", "LATEST");
@@ -41,25 +42,27 @@ public class ManagerConfiguration {
 	        return hibernateProperties;
 	}
  
+	
+    @Bean
+    public PlatformTransactionManager hibernateTransactionManager() {
+        HibernateTransactionManager transactionManager = new HibernateTransactionManager();
+        transactionManager.setSessionFactory(sessionFactory().getObject());
+        
+        return transactionManager;
+    }
+  
     @Bean
     public BasicDataSource dataSource() {
         BasicDataSource dataSource = new BasicDataSource();
         //dataSource.setDriverClassName("com.mysql.jdbc.Driver");
         dataSource.setUrl("jdbc:mysql://localhost:3306/expenses?serverTimezone=UTC");
-        dataSource.setUsername("root");
-        dataSource.setPassword("sql1qw23er4");
+        dataSource.setUsername("krzysiek");
+        dataSource.setPassword("12345678");
+        
  
         return dataSource;
     }
  
-    @Bean
-    public PlatformTransactionManager hibernateTransactionManager() {
-        HibernateTransactionManager transactionManager
-          = new HibernateTransactionManager();
-        transactionManager.setSessionFactory(sessionFactory().getObject());
-        return transactionManager;
-    }
-    
     @Bean
     public HibernateDao hibernateDao() { 
     	

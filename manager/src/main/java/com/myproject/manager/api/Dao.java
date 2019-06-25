@@ -12,6 +12,8 @@ public interface Dao {
 	int rowCountAll();
 	int search(String search,double minPrice,double maxPrice,Date minDate,Date maxDate);
 	double getExpensesSummary();
+	String login(String user,String password,String database) ;
+	String test();
 	
 	
 
