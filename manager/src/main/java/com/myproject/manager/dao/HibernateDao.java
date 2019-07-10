@@ -31,6 +31,8 @@ public class HibernateDao implements Dao{
 	private DefaultTableModel jTableModel;
 	@Autowired
 	private HibernateTransactionManager transactionManager;
+	@Autowired
+	private LocalSessionFactoryBean localFactory;
 	private Session session=null;
 	private FullTextSession fullTextSession=null;
 	private double  expensesSummary=0;
@@ -193,10 +195,7 @@ public class HibernateDao implements Dao{
 	public int search(String search,double minPrice,double maxPrice,Date minDate,Date maxDate) {
 		int resultCount=0;
 		try {
-			test = ((BasicDataSource)transactionManager.getDataSource()).getPassword();
 			session = transactionManager.getSessionFactory().openSession();	
-			
-			
 			fullTextSession = Search.getFullTextSession(session);
 			fullTextSession.createIndexer().startAndWait();
 			fullTextSession.beginTransaction();		
@@ -267,7 +266,7 @@ public class HibernateDao implements Dao{
 			while(jTableModel.getRowCount()!=0) {
 				jTableModel.removeRow(jTableModel.getRowCount()-1);
 			}
-			JOptionPane.showMessageDialog(null,"Nie znaleziono szukanego wyrażenia","Błąd wyszukiwania",JOptionPane.PLAIN_MESSAGE);
+			JOptionPane.showMessageDialog(null,"Wyszukiwana fraza powinna mieć min 3 znaki","Błąd wyszukiwania",JOptionPane.PLAIN_MESSAGE);
 		}
 		finally {
 			if(fullTextSession!=null) {
@@ -309,18 +308,9 @@ public class HibernateDao implements Dao{
 	}
 
 	@Override
-	public  String login(String user, String password, String database) {
-		BasicDataSource newDataSource =  new BasicDataSource();
-		newDataSource.setUsername(user);
-		newDataSource.setPassword(password);
-		newDataSource.setUrl(database);
+	public  String login(String user, String password) {
 		
-		
-		
-		String connectionInfo = newDataSource.getUrl() +" "+ newDataSource.getUsername() +" "+ newDataSource.getPassword() ;
-		return connectionInfo;
-				
-		
+		return null;
 	}
 
 	@Override

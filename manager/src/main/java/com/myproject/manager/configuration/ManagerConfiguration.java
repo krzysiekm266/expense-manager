@@ -13,9 +13,18 @@ import com.myproject.manager.ManagerJTableModel;
 import com.myproject.manager.dao.HibernateDao;
 
 @Configuration
-@EnableTransactionManagement
 public class ManagerConfiguration {
-	
+	 @Bean
+	 public BasicDataSource dataSource() {
+	        BasicDataSource dataSource = new BasicDataSource();
+	        //dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+	        dataSource.setUrl("jdbc:mysql://localhost:3306/expenses?serverTimezone=UTC");
+	        dataSource.setUsername("expensemanager");
+	        dataSource.setPassword("12345678");
+	        
+	 
+	        return dataSource;
+	    }
 	@Bean
     public LocalSessionFactoryBean sessionFactory() {
 	
@@ -23,6 +32,7 @@ public class ManagerConfiguration {
         sessionFactory.setPackagesToScan( "com.myproject.manager.pojo"  );
         sessionFactory.setDataSource(dataSource());
         sessionFactory.setHibernateProperties(hibernateProperties());
+       
        
         return sessionFactory;
     }
@@ -46,22 +56,14 @@ public class ManagerConfiguration {
     @Bean
     public PlatformTransactionManager hibernateTransactionManager() {
         HibernateTransactionManager transactionManager = new HibernateTransactionManager();
+        transactionManager.setDataSource(dataSource());
         transactionManager.setSessionFactory(sessionFactory().getObject());
+       
         
         return transactionManager;
     }
   
-    @Bean
-    public BasicDataSource dataSource() {
-        BasicDataSource dataSource = new BasicDataSource();
-        //dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://localhost:3306/expenses?serverTimezone=UTC");
-        dataSource.setUsername("krzysiek");
-        dataSource.setPassword("12345678");
-        
- 
-        return dataSource;
-    }
+  
  
     @Bean
     public HibernateDao hibernateDao() { 
