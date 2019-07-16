@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 import com.myproject.manager.ManagerJTableModel;
+import com.myproject.manager.api.Dao;
 import com.myproject.manager.dao.HibernateDao;
 
 @Configuration
@@ -32,6 +32,7 @@ public class ManagerConfiguration {
         sessionFactory.setPackagesToScan( "com.myproject.manager.pojo"  );
         sessionFactory.setDataSource(dataSource());
         sessionFactory.setHibernateProperties(hibernateProperties());
+        
        
        
         return sessionFactory;
@@ -65,11 +66,7 @@ public class ManagerConfiguration {
   
   
  
-    @Bean
-    public HibernateDao hibernateDao() { 
-    	
-    	return new HibernateDao();
-    }
+
     
     @Bean
     public DefaultTableModel jTableModel() {
@@ -83,6 +80,9 @@ public class ManagerConfiguration {
     	return tableModel;
     }
     
-   
+   @Bean
+   public Dao hibernateDao() {
+	   return new HibernateDao();
+   }
     
 }

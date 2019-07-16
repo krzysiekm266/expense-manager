@@ -28,18 +28,20 @@ import java.util.Calendar;
 import javax.swing.ListSelectionModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.Component;
-import javax.swing.Box;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+
 import javax.swing.SwingConstants;
 import java.awt.Font;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import java.awt.Label;
 
+
 public class AppWindow {
-	private static final  ApplicationContext ctx = new AnnotationConfigApplicationContext(ManagerConfiguration.class);
-	private Dao hibernateDao ;
-	private DefaultTableModel tableModel ;
+	private final ApplicationContext ctx = new AnnotationConfigApplicationContext(ManagerConfiguration.class);
+	private final DefaultTableModel tableModel  = ctx.getBean(DefaultTableModel.class);
+	private final Dao hibernateDao = ctx.getBean(HibernateDao.class);
+	
 	private JFrame frame;
 	private JTable tableExpenses;
 	private JTextField textPdoductName;
@@ -67,10 +69,10 @@ public class AppWindow {
 	 * Create the application.
 	 */
 	public AppWindow() {
-		
+			
 		 	initialize();	
 		 	
-			tableExpenses.setModel(tableModel);
+			
 		
 		
 	}
@@ -79,8 +81,6 @@ public class AppWindow {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		hibernateDao = ctx.getBean(HibernateDao.class);
-		tableModel = ctx.getBean(DefaultTableModel.class);
 		frame = new JFrame();
 		frame.setBounds(100, 100, 881, 626);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -206,6 +206,7 @@ public class AppWindow {
 		
 		
 		JButton btnDefaultFilters = new JButton("Wyczyść filtry");
+		
 		GridBagConstraints gbc_btnDefaultFilters = new GridBagConstraints();
 		gbc_btnDefaultFilters.fill = GridBagConstraints.HORIZONTAL;
 		gbc_btnDefaultFilters.insets = new Insets(0, 0, 0, 5);
@@ -222,7 +223,7 @@ public class AppWindow {
 		panelSearchOptions.add(lblOptionDateMin, gbc_lblOptionDateMin);
 		
 		JSpinner spinnerDateMin = new JSpinner();
-		spinnerDateMin.setModel(new SpinnerDateModel(new Date(946681200000L), new Date(946681200000L), null, Calendar.DAY_OF_YEAR));
+		spinnerDateMin.setModel(new SpinnerDateModel(new Date(631148400000L), new Date(631148400000L), null, Calendar.DAY_OF_YEAR));
 		spinnerDateMin.setEditor(new JSpinner.DateEditor(spinnerDateMin, "dd/MM/yyyy"));
 		GridBagConstraints gbc_spinnerDateMin = new GridBagConstraints();
 		gbc_spinnerDateMin.fill = GridBagConstraints.HORIZONTAL;
@@ -240,7 +241,7 @@ public class AppWindow {
 		panelSearchOptions.add(lblOptionDateMax, gbc_lblOptionDateMax);
 		
 		JSpinner spinnerDateMax = new JSpinner();
-		spinnerDateMax.setModel(new SpinnerDateModel(new Date(1556661600000L), new Date(946681200000L), null, Calendar.DAY_OF_YEAR));
+		spinnerDateMax.setModel(new SpinnerDateModel(new Date(1563284903535L), new Date(631148400000L), null, Calendar.DAY_OF_YEAR));
 		spinnerDateMax.setEditor(new JSpinner.DateEditor(spinnerDateMax, "dd/MM/yyyy"));
 		spinnerDateMax.setValue(new Date());
 		GridBagConstraints gbc_spinnerDateMax = new GridBagConstraints();
@@ -302,7 +303,7 @@ public class AppWindow {
 		panelSummary.add(lblExpensesFindRows, gbc_lblExpensesFindRows);
 		
 		Label lblExpensesFindRowsValue = new Label("***");
-		lblExpensesFindRowsValue.setText(String.valueOf(hibernateDao.printRows()));
+		//lblExpensesFindRowsValue.setText(String.valueOf(hibernateDao.showRows()));
 		GridBagConstraints gbc_lblExpensesFindRowsValue = new GridBagConstraints();
 		gbc_lblExpensesFindRowsValue.anchor = GridBagConstraints.WEST;
 		gbc_lblExpensesFindRowsValue.gridwidth = 2;
@@ -320,7 +321,7 @@ public class AppWindow {
 		panelSummary.add(lblExpensesAllProducts, gbc_lblExpensesAllProducts);
 		
 		JLabel lblExpensesAllProductsValue = new JLabel("***");
-		lblExpensesAllProductsValue.setText(String.valueOf(hibernateDao.rowCountAll()));
+		//lblExpensesAllProductsValue.setText(String.valueOf(hibernateDao.rowsCount()));
 		GridBagConstraints gbc_lblExpensesAllProductsValue = new GridBagConstraints();
 		gbc_lblExpensesAllProductsValue.insets = new Insets(0, 0, 0, 5);
 		gbc_lblExpensesAllProductsValue.anchor = GridBagConstraints.WEST;
@@ -335,7 +336,7 @@ public class AppWindow {
 		gbc_scrollPane.weighty = 100.0;
 		gbc_scrollPane.weightx = 100.0;
 		gbc_scrollPane.gridheight = 2;
-		gbc_scrollPane.insets = new Insets(0, 0, 5, 5);
+		gbc_scrollPane.insets = new Insets(5, 5, 5, 5);
 		gbc_scrollPane.fill = GridBagConstraints.BOTH;
 		gbc_scrollPane.gridx = 0;
 		gbc_scrollPane.gridy = 3;
@@ -356,6 +357,7 @@ public class AppWindow {
 		});
 		tableExpenses.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tableExpenses.setFillsViewportHeight(true);
+		tableExpenses.setModel(tableModel);
 		scrollPane.setViewportView(tableExpenses);
 		
 		
@@ -433,8 +435,11 @@ public class AppWindow {
 		panelProductEdit.add(lblPurchaseDate, gbc_lblPurchaseDate);
 		
 		JSpinner spinnerDate = new JSpinner();
-		spinnerDate.setModel(new SpinnerDateModel(new Date(1556316000000L), new Date(-305514000000L), null, Calendar.DAY_OF_MONTH));
+		
+		spinnerDate.setModel(new SpinnerDateModel(new Date(), new Date(-305514000000L), null, Calendar.DAY_OF_MONTH));
 		spinnerDate.setEditor(new JSpinner.DateEditor(spinnerDate, "dd/MM/yyyy"));
+		
+		
 		GridBagConstraints gbc_spinnerDate = new GridBagConstraints();
 		gbc_spinnerDate.weightx = 100.0;
 		gbc_spinnerDate.fill = GridBagConstraints.HORIZONTAL;
@@ -485,7 +490,7 @@ public class AppWindow {
 		gbc_btnAddProduct.weightx = 100.0;
 		gbc_btnAddProduct.fill = GridBagConstraints.HORIZONTAL;
 		gbc_btnAddProduct.gridwidth = 4;
-		gbc_btnAddProduct.insets = new Insets(0, 0, 0, 5);
+		gbc_btnAddProduct.insets = new Insets(2, 2, 2, 2);
 		gbc_btnAddProduct.gridx = 2;
 		gbc_btnAddProduct.gridy = 4;
 		panelProductEdit.add(btnAddProduct, gbc_btnAddProduct);
@@ -494,7 +499,7 @@ public class AppWindow {
 		GridBagConstraints gbc_btnEditPanelClose = new GridBagConstraints();
 		gbc_btnEditPanelClose.fill = GridBagConstraints.HORIZONTAL;
 		gbc_btnEditPanelClose.gridwidth = 9;
-		gbc_btnEditPanelClose.insets = new Insets(0, 0, 0, 5);
+		gbc_btnEditPanelClose.insets = new Insets(2, 2, 2, 2);
 		gbc_btnEditPanelClose.gridx = 2;
 		gbc_btnEditPanelClose.gridy = 5;
 		panelProductEdit.add(btnEditPanelClose, gbc_btnEditPanelClose);
@@ -509,7 +514,7 @@ public class AppWindow {
 		gbc_btnRemoveProduct.weightx = 100.0;
 		gbc_btnRemoveProduct.gridwidth = 4;
 		gbc_btnRemoveProduct.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnRemoveProduct.insets = new Insets(0, 0, 0, 5);
+		gbc_btnRemoveProduct.insets = new Insets(2, 2, 2, 2);
 		gbc_btnRemoveProduct.gridx = 7;
 		gbc_btnRemoveProduct.gridy = 4;
 		panelProductEdit.add(btnRemoveProduct, gbc_btnRemoveProduct);
@@ -525,7 +530,9 @@ public class AppWindow {
 				String summary = Double.toString(hibernateDao.getExpensesSummary());
 				lblExpensesSummaryValue.setText(summary);
 				lblExpensesFindRowsValue.setText(String.valueOf(result));
-				frame.setTitle(hibernateDao.test());
+				int allRows = hibernateDao.rowsCount();
+				lblExpensesAllProductsValue.setText(String.valueOf(allRows));
+				
 			});
 		
 			btnAddProduct.addActionListener(e->{
@@ -537,7 +544,7 @@ public class AppWindow {
 				else {
 					hibernateDao.addRow(textShop.getText(), textPdoductName.getText(), (Double)spinnerPrice.getValue(), 
 														textProductDescription.getText(), (Date)spinnerDate.getValue());
-					int result = hibernateDao.printRows();
+					int result = hibernateDao.showRows();
 					lblExpensesAllProductsValue.setText(String.valueOf(result));
 					lblExpensesFindRowsValue.setText(String.valueOf(result));
 				}
@@ -549,7 +556,7 @@ public class AppWindow {
 					int row = tableExpenses.getSelectedRow();
 					long id = (long)tableModel.getValueAt(row, 0);
 					hibernateDao.removeRow(id);
-					lblExpensesAllProductsValue.setText(String.valueOf(hibernateDao.rowCountAll()));
+					lblExpensesAllProductsValue.setText(String.valueOf(hibernateDao.rowsCount()));
 					int resultCount =  hibernateDao.search(textSearch.getText()
 							,(double)spinnerPriceFrom.getValue()
 							,(double)spinnerPriceTo.getValue()
@@ -565,6 +572,21 @@ public class AppWindow {
 				panelSearchOptions.setVisible(false);;
 			});
 			
+			btnDefaultFilters.addActionListener(e->{
+				textSearch.setText("");
+				spinnerPriceFrom.setValue(0);
+				spinnerPriceTo.setValue(1000);
+				
+				LocalDate localDate = LocalDate.of(1990, 01, 01);
+				Instant instant = localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
+				spinnerDateMin.setValue(Date.from(instant));
+				
+				localDate = LocalDate.now();
+				instant = localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
+				spinnerDateMax.setValue(Date.from(instant));
+				
+				
+			});
 		JPanel panelInfo = new JPanel();
 		tabbedPane.addTab("Podsumowanie", null, panelInfo, null);
 		GridBagLayout gbl_panelInfo = new GridBagLayout();
