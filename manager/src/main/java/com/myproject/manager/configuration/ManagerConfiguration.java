@@ -18,7 +18,7 @@ public class ManagerConfiguration {
 	 public BasicDataSource dataSource() {
 	        BasicDataSource dataSource = new BasicDataSource();
 	        //dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-	        dataSource.setUrl("jdbc:mysql://localhost:3306/expenses?serverTimezone=UTC");
+	        dataSource.setUrl("jdbc:mysql://localhost/expenses?serverTimezone=UTC");
 	        dataSource.setUsername("expensemanager");
 	        dataSource.setPassword("12345678");
 	        

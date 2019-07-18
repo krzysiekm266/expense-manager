@@ -8,6 +8,8 @@ import javax.swing.JTabbedPane;
 import java.awt.GridBagConstraints;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+
+import org.hibernate.type.YesNoType;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import com.myproject.manager.api.Dao;
@@ -28,13 +30,18 @@ import java.util.Calendar;
 import javax.swing.ListSelectionModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 import javax.swing.SwingConstants;
 import java.awt.Font;
 import java.awt.Label;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 
 public class AppWindow {
@@ -44,10 +51,20 @@ public class AppWindow {
 	
 	private JFrame frame;
 	private JTable tableExpenses;
-	private JTextField textPdoductName;
+	private JTextField textProductName;
 	private JTextField textProductDescription;
 	private JTextField textShop;
 	private JTextField textSearch;
+	
+	private boolean editModeOn;
+	private long selectedId;
+	private String selectedProductName;
+	private String selectedProductDescription;
+	private String selectedShop;
+	private double selectedPrice;
+	private Date selectedDate;
+	
+	
 
 	/**
 	 * Launch the application.
@@ -72,11 +89,9 @@ public class AppWindow {
 			
 		 	initialize();	
 		 	
-			
-		
-		
+	
 	}
-
+	
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -109,6 +124,7 @@ public class AppWindow {
 		
 		JPanel panelSearchOptions = new JPanel();
 		GridBagConstraints gbc_panelSearchOptions = new GridBagConstraints();
+		gbc_panelSearchOptions.gridwidth = 2;
 		gbc_panelSearchOptions.gridheight = 3;
 		gbc_panelSearchOptions.fill = GridBagConstraints.HORIZONTAL;
 		gbc_panelSearchOptions.insets = new Insets(5, 5, 5, 5);
@@ -183,25 +199,44 @@ public class AppWindow {
 		
 		JPanel panelMenu = new JPanel();
 		GridBagConstraints gbc_panelMenu = new GridBagConstraints();
-		gbc_panelMenu.insets = new Insets(0, 0, 5, 0);
-		gbc_panelMenu.gridheight = 3;
+		gbc_panelMenu.weightx = 50.0;
+		gbc_panelMenu.fill = GridBagConstraints.VERTICAL;
+		gbc_panelMenu.gridheight = 5;
 		gbc_panelMenu.gridx = 6;
 		gbc_panelMenu.gridy = 0;
 		panelSearchOptions.add(panelMenu, gbc_panelMenu);
 		GridBagLayout gbl_panelMenu = new GridBagLayout();
 		gbl_panelMenu.columnWidths = new int[]{0, 0, 0};
-		gbl_panelMenu.rowHeights = new int[]{0, 0, 0};
+		gbl_panelMenu.rowHeights = new int[]{0, 0, 0, 0, 0};
 		gbl_panelMenu.columnWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
-		gbl_panelMenu.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+		gbl_panelMenu.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		panelMenu.setLayout(gbl_panelMenu);
 		
-		JButton btnEdit = new JButton("Edycja...");
-		GridBagConstraints gbc_btnEdit = new GridBagConstraints();
-		gbc_btnEdit.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnEdit.insets = new Insets(0, 0, 5, 5);
-		gbc_btnEdit.gridx = 0;
-		gbc_btnEdit.gridy = 0;
-		panelMenu.add(btnEdit, gbc_btnEdit);
+		JButton btnAdd = new JButton("Dodaj");
+		GridBagConstraints gbc_btnAdd = new GridBagConstraints();
+		gbc_btnAdd.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnAdd.insets = new Insets(0, 0, 5, 5);
+		gbc_btnAdd.gridx = 0;
+		gbc_btnAdd.gridy = 0;
+		panelMenu.add(btnAdd, gbc_btnAdd);
+		
+		JButton btnDelete = new JButton("Usuń");
+		
+		GridBagConstraints gbc_btnDelete = new GridBagConstraints();
+		gbc_btnDelete.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnDelete.insets = new Insets(0, 0, 5, 5);
+		gbc_btnDelete.gridx = 0;
+		gbc_btnDelete.gridy = 1;
+		panelMenu.add(btnDelete, gbc_btnDelete);
+		
+		JButton btnUpdate = new JButton("Edytuj");
+		
+		GridBagConstraints gbc_btnUpdate = new GridBagConstraints();
+		gbc_btnUpdate.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnUpdate.insets = new Insets(0, 0, 5, 5);
+		gbc_btnUpdate.gridx = 0;
+		gbc_btnUpdate.gridy = 2;
+		panelMenu.add(btnUpdate, gbc_btnUpdate);
 		
 		
 		
@@ -209,9 +244,9 @@ public class AppWindow {
 		
 		GridBagConstraints gbc_btnDefaultFilters = new GridBagConstraints();
 		gbc_btnDefaultFilters.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnDefaultFilters.insets = new Insets(0, 0, 0, 5);
+		gbc_btnDefaultFilters.insets = new Insets(0, 0, 5, 5);
 		gbc_btnDefaultFilters.gridx = 0;
-		gbc_btnDefaultFilters.gridy = 1;
+		gbc_btnDefaultFilters.gridy = 3;
 		panelMenu.add(btnDefaultFilters, gbc_btnDefaultFilters);
 		
 		JLabel lblOptionDateMin = new JLabel("Data zakupu od:");
@@ -223,7 +258,7 @@ public class AppWindow {
 		panelSearchOptions.add(lblOptionDateMin, gbc_lblOptionDateMin);
 		
 		JSpinner spinnerDateMin = new JSpinner();
-		spinnerDateMin.setModel(new SpinnerDateModel(new Date(631148400000L), new Date(631148400000L), null, Calendar.DAY_OF_YEAR));
+		spinnerDateMin.setModel(new SpinnerDateModel(new Date(631152000000L), new Date(631152000000L), null, Calendar.DAY_OF_YEAR));
 		spinnerDateMin.setEditor(new JSpinner.DateEditor(spinnerDateMin, "dd/MM/yyyy"));
 		GridBagConstraints gbc_spinnerDateMin = new GridBagConstraints();
 		gbc_spinnerDateMin.fill = GridBagConstraints.HORIZONTAL;
@@ -241,7 +276,7 @@ public class AppWindow {
 		panelSearchOptions.add(lblOptionDateMax, gbc_lblOptionDateMax);
 		
 		JSpinner spinnerDateMax = new JSpinner();
-		spinnerDateMax.setModel(new SpinnerDateModel(new Date(1563284903535L), new Date(631148400000L), null, Calendar.DAY_OF_YEAR));
+		spinnerDateMax.setModel(new SpinnerDateModel(new Date(1563450994542L), new Date(631152000000L), null, Calendar.DAY_OF_YEAR));
 		spinnerDateMax.setEditor(new JSpinner.DateEditor(spinnerDateMax, "dd/MM/yyyy"));
 		spinnerDateMax.setValue(new Date());
 		GridBagConstraints gbc_spinnerDateMax = new GridBagConstraints();
@@ -255,7 +290,7 @@ public class AppWindow {
 		GridBagConstraints gbc_btnSearch = new GridBagConstraints();
 		gbc_btnSearch.gridwidth = 5;
 		gbc_btnSearch.fill = GridBagConstraints.BOTH;
-		gbc_btnSearch.insets = new Insets(0, 0, 0, 5);
+		gbc_btnSearch.insets = new Insets(0, 0, 5, 5);
 		gbc_btnSearch.gridx = 1;
 		gbc_btnSearch.gridy = 3;
 		panelSearchOptions.add(btnSearch, gbc_btnSearch);
@@ -266,7 +301,7 @@ public class AppWindow {
 		GridBagConstraints gbc_panelSummary = new GridBagConstraints();
 		gbc_panelSummary.fill = GridBagConstraints.HORIZONTAL;
 		gbc_panelSummary.gridwidth = 5;
-		gbc_panelSummary.insets = new Insets(0, 0, 0, 5);
+		gbc_panelSummary.insets = new Insets(5, 5, 5, 5);
 		gbc_panelSummary.gridx = 1;
 		gbc_panelSummary.gridy = 4;
 		panelSearchOptions.add(panelSummary, gbc_panelSummary);
@@ -285,7 +320,7 @@ public class AppWindow {
 		gbc_lblExpensesSummary.gridy = 0;
 		panelSummary.add(lblExpensesSummary, gbc_lblExpensesSummary);
 		
-		JLabel lblExpensesSummaryValue = new JLabel("*");
+		JLabel lblExpensesSummaryValue = new JLabel("***");
 		GridBagConstraints gbc_lblExpensesSummaryValue = new GridBagConstraints();
 		gbc_lblExpensesSummaryValue.gridwidth = 2;
 		gbc_lblExpensesSummaryValue.insets = new Insets(0, 0, 0, 5);
@@ -343,18 +378,8 @@ public class AppWindow {
 		panelExpenses.add(scrollPane, gbc_scrollPane);
 		
 		tableExpenses = new JTable();
-		tableExpenses.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				/*if(tableExpenses.getRowCount()>0) {
-					int row = tableExpenses.getSelectedRow();
-					Object txt = tableModel.getValueAt(row, 0);
-					
-					//textSearch.setText(String.valueOf(txt));
-				}
-				*/
-			}
-		});
+		
+		
 		tableExpenses.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tableExpenses.setFillsViewportHeight(true);
 		tableExpenses.setModel(tableModel);
@@ -375,9 +400,9 @@ public class AppWindow {
 		panelExpenses.add(panelProductEdit, gbc_panelProductEdit);
 		GridBagLayout gbl_panelProductEdit = new GridBagLayout();
 		gbl_panelProductEdit.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gbl_panelProductEdit.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
+		gbl_panelProductEdit.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
 		gbl_panelProductEdit.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, Double.MIN_VALUE};
-		gbl_panelProductEdit.rowWeights = new double[]{0.0, 0.0, 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panelProductEdit.rowWeights = new double[]{0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		panelProductEdit.setLayout(gbl_panelProductEdit);
 		
 		JLabel lblPanelEdycjiProduktu = new JLabel("Panel edycji produktu:");
@@ -392,26 +417,24 @@ public class AppWindow {
 		
 		JLabel lblProductName = new JLabel("Nazwa produktu:");
 		GridBagConstraints gbc_lblProductName = new GridBagConstraints();
-		gbc_lblProductName.fill = GridBagConstraints.HORIZONTAL;
-		gbc_lblProductName.anchor = GridBagConstraints.EAST;
 		gbc_lblProductName.insets = new Insets(0, 0, 5, 5);
 		gbc_lblProductName.gridx = 2;
 		gbc_lblProductName.gridy = 2;
 		panelProductEdit.add(lblProductName, gbc_lblProductName);
 		
-		textPdoductName = new JTextField();
-		GridBagConstraints gbc_textPdoductName = new GridBagConstraints();
-		gbc_textPdoductName.insets = new Insets(0, 0, 5, 5);
-		gbc_textPdoductName.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textPdoductName.gridx = 3;
-		gbc_textPdoductName.gridy = 2;
-		panelProductEdit.add(textPdoductName, gbc_textPdoductName);
-		textPdoductName.setColumns(10);
+		textProductName = new JTextField();
+		GridBagConstraints gbc_textProductName = new GridBagConstraints();
+		gbc_textProductName.weightx = 100.0;
+		gbc_textProductName.gridwidth = 2;
+		gbc_textProductName.insets = new Insets(0, 0, 5, 5);
+		gbc_textProductName.fill = GridBagConstraints.HORIZONTAL;
+		gbc_textProductName.gridx = 3;
+		gbc_textProductName.gridy = 2;
+		panelProductEdit.add(textProductName, gbc_textProductName);
+		textProductName.setColumns(10);
 		
 		JLabel lblPrice = new JLabel("Cena: ");
 		GridBagConstraints gbc_lblPrice = new GridBagConstraints();
-		gbc_lblPrice.fill = GridBagConstraints.HORIZONTAL;
-		gbc_lblPrice.anchor = GridBagConstraints.EAST;
 		gbc_lblPrice.insets = new Insets(0, 0, 5, 5);
 		gbc_lblPrice.gridx = 5;
 		gbc_lblPrice.gridy = 2;
@@ -419,6 +442,7 @@ public class AppWindow {
 		
 		JSpinner spinnerPrice = new JSpinner();
 		spinnerPrice.setModel(new SpinnerNumberModel(0.0, 0.0, 2.147483647E9, 0.1));
+		
 		GridBagConstraints gbc_spinnerPrice = new GridBagConstraints();
 		gbc_spinnerPrice.fill = GridBagConstraints.HORIZONTAL;
 		gbc_spinnerPrice.insets = new Insets(0, 0, 5, 5);
@@ -428,7 +452,6 @@ public class AppWindow {
 		
 		JLabel lblPurchaseDate = new JLabel("Data zakupu:");
 		GridBagConstraints gbc_lblPurchaseDate = new GridBagConstraints();
-		gbc_lblPurchaseDate.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lblPurchaseDate.insets = new Insets(0, 0, 5, 5);
 		gbc_lblPurchaseDate.gridx = 9;
 		gbc_lblPurchaseDate.gridy = 2;
@@ -436,7 +459,7 @@ public class AppWindow {
 		
 		JSpinner spinnerDate = new JSpinner();
 		
-		spinnerDate.setModel(new SpinnerDateModel(new Date(), new Date(-305514000000L), null, Calendar.DAY_OF_MONTH));
+		spinnerDate.setModel(new SpinnerDateModel(new Date(1563449666292L), new Date(10029600000L), null, Calendar.DAY_OF_YEAR));
 		spinnerDate.setEditor(new JSpinner.DateEditor(spinnerDate, "dd/MM/yyyy"));
 		
 		
@@ -450,8 +473,6 @@ public class AppWindow {
 		
 		JLabel lblShop = new JLabel("Sklep: ");
 		GridBagConstraints gbc_lblShop = new GridBagConstraints();
-		gbc_lblShop.fill = GridBagConstraints.HORIZONTAL;
-		gbc_lblShop.anchor = GridBagConstraints.EAST;
 		gbc_lblShop.insets = new Insets(0, 0, 5, 5);
 		gbc_lblShop.gridx = 2;
 		gbc_lblShop.gridy = 3;
@@ -459,16 +480,16 @@ public class AppWindow {
 		
 		textShop = new JTextField();
 		GridBagConstraints gbc_textShop = new GridBagConstraints();
+		gbc_textShop.weightx = 100.0;
+		gbc_textShop.gridwidth = 2;
 		gbc_textShop.insets = new Insets(0, 0, 5, 5);
 		gbc_textShop.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textShop.gridx = 3;
 		gbc_textShop.gridy = 3;
 		panelProductEdit.add(textShop, gbc_textShop);
 		textShop.setColumns(10);
-		JLabel lblDescription = new JLabel("Opips produktu: ");
+		JLabel lblDescription = new JLabel("Opis produktu: ");
 		GridBagConstraints gbc_lblDescription = new GridBagConstraints();
-		gbc_lblDescription.fill = GridBagConstraints.HORIZONTAL;
-		gbc_lblDescription.anchor = GridBagConstraints.EAST;
 		gbc_lblDescription.insets = new Insets(0, 0, 5, 5);
 		gbc_lblDescription.gridx = 5;
 		gbc_lblDescription.gridy = 3;
@@ -487,39 +508,125 @@ public class AppWindow {
 		
 		JButton btnAddProduct = new JButton("Dodaj produkt");
 		GridBagConstraints gbc_btnAddProduct = new GridBagConstraints();
-		gbc_btnAddProduct.weightx = 100.0;
 		gbc_btnAddProduct.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnAddProduct.gridwidth = 4;
-		gbc_btnAddProduct.insets = new Insets(2, 2, 2, 2);
+		gbc_btnAddProduct.weightx = 100.0;
+		gbc_btnAddProduct.gridwidth = 9;
+		gbc_btnAddProduct.insets = new Insets(2, 2, 2, 5);
 		gbc_btnAddProduct.gridx = 2;
 		gbc_btnAddProduct.gridy = 4;
 		panelProductEdit.add(btnAddProduct, gbc_btnAddProduct);
+		
+		JButton btnUpdateProduct = new JButton("Zapisz zmiany");
+		
+		GridBagConstraints gbc_btnUpdateProduct = new GridBagConstraints();
+		gbc_btnUpdateProduct.gridwidth = 9;
+		gbc_btnUpdateProduct.weightx = 100.0;
+		gbc_btnUpdateProduct.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnUpdateProduct.insets = new Insets(2, 2, 2, 5);
+		gbc_btnUpdateProduct.gridx = 2;
+		gbc_btnUpdateProduct.gridy = 5;
+		panelProductEdit.add(btnUpdateProduct, gbc_btnUpdateProduct);
+		btnUpdateProduct.setVisible(false);
+		
+		JButton btnDeleteProduct = new JButton("Usuń produkt");
+		GridBagConstraints gbc_btnDeleteProduct = new GridBagConstraints();
+		gbc_btnDeleteProduct.weightx = 100.0;
+		gbc_btnDeleteProduct.gridwidth = 9;
+		gbc_btnDeleteProduct.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnDeleteProduct.insets = new Insets(2, 2, 2, 5);
+		gbc_btnDeleteProduct.gridx = 2;
+		gbc_btnDeleteProduct.gridy = 6;
+		panelProductEdit.add(btnDeleteProduct, gbc_btnDeleteProduct);
 		
 		JButton btnEditPanelClose = new JButton("Zakończ edycję");
 		GridBagConstraints gbc_btnEditPanelClose = new GridBagConstraints();
 		gbc_btnEditPanelClose.fill = GridBagConstraints.HORIZONTAL;
 		gbc_btnEditPanelClose.gridwidth = 9;
-		gbc_btnEditPanelClose.insets = new Insets(2, 2, 2, 2);
+		gbc_btnEditPanelClose.insets = new Insets(2, 2, 2, 5);
 		gbc_btnEditPanelClose.gridx = 2;
-		gbc_btnEditPanelClose.gridy = 5;
+		gbc_btnEditPanelClose.gridy = 7;
 		panelProductEdit.add(btnEditPanelClose, gbc_btnEditPanelClose);
 		
-		btnEditPanelClose.addActionListener(e->{
-			panelProductEdit.setVisible(false);
-			panelSearchOptions.setVisible(true);
-		});
 		
-		JButton btnRemoveProduct = new JButton("Usuń produkt");
-		GridBagConstraints gbc_btnRemoveProduct = new GridBagConstraints();
-		gbc_btnRemoveProduct.weightx = 100.0;
-		gbc_btnRemoveProduct.gridwidth = 4;
-		gbc_btnRemoveProduct.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnRemoveProduct.insets = new Insets(2, 2, 2, 2);
-		gbc_btnRemoveProduct.gridx = 7;
-		gbc_btnRemoveProduct.gridy = 4;
-		panelProductEdit.add(btnRemoveProduct, gbc_btnRemoveProduct);
+			/*
+		 	* klikniecie przycisku usuwanie produktu
+		 	* najpierw sprawdza czy widok tabeli nie jest pusty i  
+		 	* czy sa jakies zaznaczone wiersze 
+		 	* wyswietla okno dialogowe z pytaniem o potwierdzenie usuniecia wiersza
+		 	*/
+			btnDeleteProduct.addActionListener(e->{
+				if(tableExpenses.getRowCount()>0 && tableExpenses.getSelectedRow()>=0) {
+					int confirm = JOptionPane.showConfirmDialog(frame, "Czy na pewno chcesz usunąć zaznaczony wiersz?\nUsunięte dane zostaną utracone!"
+											, "Usuwanie zaznaczonego wiersza", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+					if(confirm == JOptionPane.YES_OPTION) {
+						int row = tableExpenses.getSelectedRow();
+						long id = (long)tableModel.getValueAt(row, 0);
+						hibernateDao.removeRow(id);
+						lblExpensesAllProductsValue.setText(String.valueOf(hibernateDao.rowsCount()));
+						int resultCount =  hibernateDao.search(textSearch.getText()
+								,(double)spinnerPriceFrom.getValue()
+								,(double)spinnerPriceTo.getValue()
+								,(Date)spinnerDateMin.getValue()
+								,(Date)spinnerDateMax.getValue()
+							);
+						lblExpensesFindRowsValue.setText(String.valueOf(resultCount));
+					}
+					
+				}
+			});
 		
-			btnSearch.addActionListener(e->{	
+			/*
+			 * klikniecie przycisku zakonczenia edycji
+			 * ukrywa panel edycji 
+			 * pokazuje ustawia panel wyszukiwania 
+			 * ukrywa przyciski dodawania produktu ,usuwania i zapisywania zmian
+			 * wylacza tryb edycji
+			 * czysci wartosci pol edytora
+			 * pokazuje wszystkie pola i etykiety panelu edycji(sa ukrywane przy kliknieciu przycisku usun)
+			 */
+			btnEditPanelClose.addActionListener(e->{
+				panelProductEdit.setVisible(false);
+				panelSearchOptions.setVisible(true);
+				btnAddProduct.setVisible(false);
+				btnDeleteProduct.setVisible(false);
+				btnUpdateProduct.setVisible(false);
+				
+				editModeOn=false;
+				
+				textProductName.setText("");
+				spinnerPrice.setValue(0.00);
+				LocalDate localDate = LocalDate.now();
+				Instant instant = localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
+				spinnerDate.setValue(Date.from(instant));
+				textShop.setText("");
+				textProductDescription.setText("");
+				
+				textProductName.setVisible(true);
+				textProductDescription.setVisible(true);
+				textShop.setVisible(true);
+				spinnerPrice.setVisible(true);
+				spinnerDate.setVisible(true);
+				lblProductName.setVisible(true);
+				lblShop.setVisible(true);
+				lblPrice.setVisible(true);
+				lblDescription.setVisible(true);
+				lblPurchaseDate.setVisible(true);
+			});
+			
+			/*
+			 * klikniecie przycisku wyszukiwania
+			 * pokazuje sume cen znalezionych produktow
+			 *  liczbe znalezionych wierszy
+			 *  liczbe wszystkich wierszy w bazie
+			 */
+			btnSearch.addActionListener(e->{
+				
+				Date tempDateMin = (Date)spinnerDateMin.getValue();
+				tempDateMin.setTime(tempDateMin.getTime()+30000000);
+				
+				Date tempDateMax = (Date)spinnerDateMax.getValue();
+				tempDateMin.setTime(tempDateMin.getTime()+30000000);
+				
 				int result =  hibernateDao.search(textSearch.getText()
 						,(double)spinnerPriceFrom.getValue()
 						,(double)spinnerPriceTo.getValue()
@@ -534,48 +641,89 @@ public class AppWindow {
 				lblExpensesAllProductsValue.setText(String.valueOf(allRows));
 				
 			});
-		
+			
+			/*
+			 * klikniecie przycisku dodawania produktu
+			 * sprawdza poprawnosc wartosci w panelu wdycji
+			 * formatuje cene do 2 miejsc po przecinku
+			 * dodaje produkt do bazy
+			 * wyswietla wszystkie wiersze zaktualizowanej bazy
+			 * pokazuje sume cen  produktow
+			 *   liczbe znalezionych wierszy
+			 *   liczbe wszystkich wierszy w bazie
+			 * czysci pole z nazwa produktu,pozostawia pozostałe pola z ostatnimi wartosciami
+			 *  
+			 */
 			btnAddProduct.addActionListener(e->{
-				if(textShop.getText().isEmpty() || textPdoductName.getText().isEmpty()|| (Double)spinnerPrice.getValue()==0.0 
+				if(textShop.getText().isEmpty() || textProductName.getText().isEmpty() || (Double)spinnerPrice.getValue()==0.0 
 												|| textProductDescription.getText().isEmpty()  ) {
-					JOptionPane.showMessageDialog(frame, "Jedna z wartośći jest niprawidłowa.", "Błąd przy dodawaniu produktu.", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(frame, "Jedna z wartośći jest nieprawidłowa.", "Błąd przy dodawaniu produktu.", JOptionPane.ERROR_MESSAGE);
 					
 				}
 				else {
-					hibernateDao.addRow(textShop.getText(), textPdoductName.getText(), (Double)spinnerPrice.getValue(), 
+					Double price = (Double)spinnerPrice.getValue();
+					DecimalFormat df = new DecimalFormat();
+					df.setMaximumFractionDigits(2);	
+					price = Double.valueOf(df.format(price).replace(",", "."));
+					
+					hibernateDao.addRow(textShop.getText(), textProductName.getText(), price, 
 														textProductDescription.getText(), (Date)spinnerDate.getValue());
 					int result = hibernateDao.showRows();
 					lblExpensesAllProductsValue.setText(String.valueOf(result));
 					lblExpensesFindRowsValue.setText(String.valueOf(result));
+					textProductName.setText("");
 				}
 				
 			});
 			
-			btnRemoveProduct.addActionListener(e->{
-				if(tableExpenses.getRowCount()>0 && tableExpenses.getSelectedRow()>=0) {
-					int row = tableExpenses.getSelectedRow();
-					long id = (long)tableModel.getValueAt(row, 0);
-					hibernateDao.removeRow(id);
-					lblExpensesAllProductsValue.setText(String.valueOf(hibernateDao.rowsCount()));
-					int resultCount =  hibernateDao.search(textSearch.getText()
-							,(double)spinnerPriceFrom.getValue()
-							,(double)spinnerPriceTo.getValue()
-							,(Date)spinnerDateMin.getValue()
-							,(Date)spinnerDateMax.getValue()
-					);
-					lblExpensesFindRowsValue.setText(String.valueOf(resultCount));
-				}
-			});
-			
-			btnEdit.addActionListener(e->{
+			/*
+			 * klikniecie przycisku dodawania
+			 * ukrywa panel wyszukiwania
+			 * pokazuje panel edycji
+			 * pokazuje przycisk dodawanie produktu w panelu edycji
+			 */
+			btnAdd.addActionListener(e->{
+				panelSearchOptions.setVisible(false);
 				panelProductEdit.setVisible(true);
-				panelSearchOptions.setVisible(false);;
+				btnAddProduct.setVisible(true);
 			});
 			
+			/*
+			 * klikniecie przycisku usun
+			 * ukrywa panel wyszukiwania
+			 * pokazuje panel edycji
+			 * pokazuje przycisk usuwania
+			 * ukrywa wszystkie pola i etykiety panelu edycji
+			 */
+			btnDelete.addActionListener(e->{
+				panelSearchOptions.setVisible(false);
+				panelProductEdit.setVisible(true);
+				btnDeleteProduct.setVisible(true);
+				
+				textProductName.setVisible(false);
+				textProductDescription.setVisible(false);
+				textShop.setVisible(false);
+				spinnerPrice.setVisible(false);
+				spinnerDate.setVisible(false);
+				lblProductName.setVisible(false);
+				lblShop.setVisible(false);
+				lblPrice.setVisible(false);
+				lblDescription.setVisible(false);
+				lblPurchaseDate.setVisible(false);
+				
+			});
+			
+			
+			
+			/*
+			 * klikniecie przycisku ustwania domyslnego filtru
+			 * ustawia pola wyszukiwania na domyslne wartosci
+			 * uzywa klasy Instant do przekazywania daty pomiedzy LocalDate i Date
+			 */
 			btnDefaultFilters.addActionListener(e->{
 				textSearch.setText("");
-				spinnerPriceFrom.setValue(0);
-				spinnerPriceTo.setValue(1000);
+				spinnerPriceFrom.setValue(0.00);
+				spinnerPriceTo.setValue(1000.00);
 				
 				LocalDate localDate = LocalDate.of(1990, 01, 01);
 				Instant instant = localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
@@ -585,8 +733,120 @@ public class AppWindow {
 				instant = localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
 				spinnerDateMax.setValue(Date.from(instant));
 				
+			});
+			
+			/*
+			 * klikniecie przycisku edycji
+			 * wlacza tryb edycji(zmienna uzywana do wczytania wartosci ostatnio kliknietego wiersza do panelu edycji )
+			 * ukrywa panel wyszukiwania
+			 * pokazuje panel edycji
+			 * pokazuje przycisk zapisu zamin po edycji
+			 * zapamietuje wartosci wybranego wiersza(zmienne selected... sa uzywane sprawdzeniu czy dane po edycji ulegly zmianie)
+			 * wczytuje do pol edytora wartosci wybranego  wiersza(jezeli jakis jest wybrany)
+			 */
+			btnUpdate.addActionListener(e->{
+				editModeOn=true;
+				panelSearchOptions.setVisible(false);
+				panelProductEdit.setVisible(true);
+				btnUpdateProduct.setVisible(true);
+				
+					if(tableExpenses.getRowCount()>0 && tableExpenses.getSelectedRow()>=0) {
+						int row = tableExpenses.getSelectedRow();
+						selectedId = (long)tableModel.getValueAt(row, 0);
+						selectedProductName = (String)tableModel.getValueAt(row, 1);
+						selectedPrice = (double)tableModel.getValueAt(row, 2);
+						selectedProductDescription = (String)tableModel.getValueAt(row, 3);
+						selectedDate = (Date)tableModel.getValueAt(row, 4);
+						selectedShop = (String)tableModel.getValueAt(row, 5);
+						
+						textProductName.setText(selectedProductName);
+						spinnerPrice.setValue(selectedPrice);
+						textProductDescription.setText(selectedProductDescription);
+						spinnerDate.setValue(selectedDate);
+						textShop.setText(selectedShop);			
+						
+								
+					}
+					
+				
 				
 			});
+			/*
+			 * klikniecie przycisku zapisywania(aktualizacji) danych po edycji
+			 * sprawdza czy jest wybrany jakis wiersz 
+			 * sprawdza czy zostaly dokonane zmiany wartosci edytowanych pol
+			 * (zmienione wartosci sa sa aktualizowane - pola sa sprawdzane i aktualizowane oddzielnie)
+			 * wyswietla wszystie wiersze bazy
+			 */
+			btnUpdateProduct.addActionListener(e->{
+				if(tableExpenses.getRowCount()>0 && tableExpenses.getSelectedRow()>=0) {
+					//int row = tableExpenses.getSelectedRow();
+					if(!textProductName.getText().equals(selectedProductName)) {
+						hibernateDao.updateRow("Product", "name", textProductName.getText(), "idproduct", selectedId);
+					}
+					
+					if(!textProductDescription.getText().equals(selectedProductDescription)) {
+						hibernateDao.updateRow("Product", "description", textProductDescription.getText(), "idproduct", selectedId);
+					}
+					
+					//do sprawdzenia
+					if(!textShop.getText().equals(selectedShop)) {
+						hibernateDao.updateRow("Product", "shop.nameShop", textShop.getText(), "idproduct", selectedId);
+					}
+					
+					//do sprawadzenia
+					if(!spinnerPrice.getValue().equals(selectedPrice) ) {
+						hibernateDao.updateRow("Product", "price", spinnerPrice.getValue(), "idproduct", selectedId);
+					}
+					
+					//do sprawdzenia
+					if(!spinnerDate.getValue().equals(selectedDate)) {
+						
+						Date temp = (Date)spinnerDate.getValue();
+						temp.setTime(temp.getTime()+30000000);
+						frame.setTitle(temp.toString());
+						hibernateDao.updateRow("Product", "purchaseDate", temp, "idproduct", selectedId);
+					}
+					hibernateDao.showRows();
+					//poprawic wyswietlania daty i wybieranie wiersza po edycji
+				}
+			});
+			
+			/*
+			 * Zapamietuje wartosci kliknietego wiersza
+			 * przy wlaczonoym trybie edycji  klikniecie wiersza wpisuje jego wartosci do  panelu edycji
+			 */
+			tableExpenses.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if(tableExpenses.getRowCount()>0 && tableExpenses.getSelectedRow()>=0) {
+						int row = tableExpenses.getSelectedRow();
+						selectedId = (long)tableModel.getValueAt(row, 0);
+						selectedProductName = (String)tableModel.getValueAt(row, 1);
+						selectedPrice = (double)tableModel.getValueAt(row, 2);
+						selectedProductDescription = (String)tableModel.getValueAt(row, 3);
+						selectedDate = (Date)tableModel.getValueAt(row, 4);
+						selectedShop = (String)tableModel.getValueAt(row, 5);
+						
+						if(editModeOn==true) {
+							textProductName.setText(selectedProductName);
+							spinnerPrice.setValue(selectedPrice);
+							textProductDescription.setText(selectedProductDescription);
+							spinnerDate.setValue(selectedDate);
+							textShop.setText(selectedShop);
+							
+						}
+						
+						
+						
+					}
+					
+				}
+			});
+			
+		btnAddProduct.setVisible(false);
+		btnUpdateProduct.setVisible(false);
+		btnDeleteProduct.setVisible(false);
 		JPanel panelInfo = new JPanel();
 		tabbedPane.addTab("Podsumowanie", null, panelInfo, null);
 		GridBagLayout gbl_panelInfo = new GridBagLayout();

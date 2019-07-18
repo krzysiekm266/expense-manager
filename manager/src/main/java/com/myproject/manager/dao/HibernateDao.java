@@ -84,25 +84,23 @@ public class HibernateDao implements Dao{
 		try {
 			session = transactionManager.getSessionFactory().openSession();
 			session.beginTransaction();
-			String hql = "DELETE FROM Product WHERE idproduct = :id";
-			Query<?> hibernateQuery =  session.createQuery(hql);
-			hibernateQuery.setParameter("id", idProduct);
-			//int result = hibernateQuery.executeUpdate();
-			//kontrolnie do usuniecia
-			//System.out.println("Rows affected: " + result);
-
-			for(int i=0;i<jTableModel.getRowCount();i++) {
-				if( (long)jTableModel.getValueAt(i, 0)==idProduct ) {
-					jTableModel.removeRow(i);
-					break;
-				}					
-			}
+				String hql = "DELETE FROM Product WHERE idproduct = :id";
+				Query<?> hibernateQuery =  session.createQuery(hql);
+				hibernateQuery.setParameter("id", idProduct);
+				hibernateQuery.executeUpdate();
+			
+				for(int i=0;i<jTableModel.getRowCount();i++) {
+					if( (long)jTableModel.getValueAt(i, 0)==idProduct ) {
+						jTableModel.removeRow(i);
+						break;
+					}					
+				}
 		
 			session.getTransaction().commit();
 		}catch(HibernateException e) {
 			if(session.getTransaction()!=null) {
 				session.getTransaction().rollback();
-				//System.out.print("\nblad Massage: "+e.getMessage()+"\nCause: "+e.getCause());
+				
 			}
 			JOptionPane.showMessageDialog(null,e.getMessage()+"\n"+e.getCause(),"Błąd ",JOptionPane.ERROR_MESSAGE);
 		}
@@ -120,13 +118,13 @@ public class HibernateDao implements Dao{
 		try {
 			session = transactionManager.getSessionFactory().openSession();
 			session.beginTransaction();
-			String hql = "UPDATE "+entity+" set "+fieldName+"= :fieldValue WHERE "+idName+" = :idValue";
-			Query<?> hibernateQuery = session.createQuery(hql);
-			
-			hibernateQuery.setParameter("fieldValue", fieldValue);
-			hibernateQuery.setParameter("idValue", idValue);
-			int result = hibernateQuery.executeUpdate();
-			System.out.println("Rows affected: " + result);		
+				String hql = "UPDATE "+entity+
+						 	" set "+fieldName+"= :fieldValue WHERE "+idName+" = :idValue";	
+				Query<?> hibernateQuery = session.createQuery(hql);	
+				hibernateQuery.setParameter("fieldValue", fieldValue);
+				hibernateQuery.setParameter("idValue", idValue);
+				int result = hibernateQuery.executeUpdate();
+				System.out.println("Rows affected: " + result);	
 			session.getTransaction().commit();
 		}catch(HibernateException e) {
 			if(session.getTransaction()!=null) {
@@ -150,11 +148,11 @@ public class HibernateDao implements Dao{
 		try {
 			session = transactionManager.getSessionFactory().openSession();
 			session.beginTransaction();
-			Query<?> hibernateQuery =  session.createQuery("FROM Product");
-			List<?> list = hibernateQuery.list();
-			resultCount = list.size();
-			ListIterator<?> iter = list.listIterator();
-			setJTableModelDataFromQueryResult(iter);	
+				Query<?> hibernateQuery =  session.createQuery("FROM Product");
+				List<?> list = hibernateQuery.list();
+				resultCount = list.size();
+				ListIterator<?> iter = list.listIterator();
+				setJTableModelDataFromQueryResult(iter);	
 			session.getTransaction().commit();
 		}catch(HibernateException e) {
 			if(session.getTransaction()!=null) {
@@ -181,50 +179,50 @@ public class HibernateDao implements Dao{
 			fullTextSession = Search.getFullTextSession(session);
 			fullTextSession.createIndexer().startAndWait();
 			fullTextSession.beginTransaction();		
-			QueryBuilder queryBuilder = fullTextSession.getSearchFactory().buildQueryBuilder().forEntity(Product.class).get();
-			org.apache.lucene.search.Query luceneQuery;
-			if(search.isEmpty()) {
-				luceneQuery = queryBuilder
+				QueryBuilder queryBuilder = fullTextSession.getSearchFactory().buildQueryBuilder().forEntity(Product.class).get();
+				org.apache.lucene.search.Query luceneQuery;
+				if(search.isEmpty()) {
+					luceneQuery = queryBuilder
+							.bool()
+								.must(queryBuilder
+										.range()
+										.onField("price").from(minPrice).to(maxPrice)
+										.createQuery()
+										)
+								.must(queryBuilder
+										.range()
+										.onField("purchaseDate").from(minDate).to(maxDate)
+										.createQuery()
+										)
+								.createQuery();  		
+				}
+				else {
+					luceneQuery = queryBuilder
 						.bool()
 							.must(queryBuilder
 									.range()
 									.onField("price").from(minPrice).to(maxPrice)
 									.createQuery()
-							)
+									)
 							.must(queryBuilder
 									.range()
 									.onField("purchaseDate").from(minDate).to(maxDate)
 									.createQuery()
-							)
-						.createQuery();
-			}
-			else {
-				luceneQuery = queryBuilder
-					.bool()
-						.must(queryBuilder
-								.range()
-								.onField("price").from(minPrice).to(maxPrice)
-								.createQuery()
-						)
-						.must(queryBuilder
-								.range()
-								.onField("purchaseDate").from(minDate).to(maxDate)
-								.createQuery()
-						)
-						.must(queryBuilder
-								.keyword()
-								.onFields("name","description","shop.nameShop")
-								.matching(search)
-								.createQuery()
-						)	
-					.createQuery();
-			}
+									)
+							.must(queryBuilder
+									.keyword()
+									.onFields("name","description","shop.nameShop")
+									.matching(search)
+									.createQuery()
+									)	
+							.createQuery();
+				}
 			
-			org.hibernate.query.Query<?> hibernateQuery = fullTextSession.createFullTextQuery(luceneQuery, Product.class);
-			List<?> list = hibernateQuery.list();
-			resultCount = list.size();
-			ListIterator<?> iter = list.listIterator();
-			setJTableModelDataFromQueryResult(iter);
+				org.hibernate.query.Query<?> hibernateQuery = fullTextSession.createFullTextQuery(luceneQuery, Product.class);
+				List<?> list = hibernateQuery.list();
+				resultCount = list.size();
+				ListIterator<?> iter = list.listIterator();
+				setJTableModelDataFromQueryResult(iter);
 			fullTextSession.getTransaction().commit();
 			
 		}catch(HibernateException e) {
@@ -266,8 +264,8 @@ public class HibernateDao implements Dao{
 		try {
 			session = transactionManager.getSessionFactory().openSession();
 			session.beginTransaction();
-			Query<?> hibernateQuery = session.createQuery("FROM Product");
-			rowCount = hibernateQuery.list().size();
+				Query<?> hibernateQuery = session.createQuery("FROM Product");
+				rowCount = hibernateQuery.list().size();
 			session.getTransaction().commit();		
 		}catch(HibernateException e) {
 			if(session.getTransaction()!=null) {

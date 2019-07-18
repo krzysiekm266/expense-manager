@@ -58,7 +58,7 @@ public class Product {
 	@Field(analyzer = @Analyzer(definition="ngrams"))
 	private String description;
 	
-	@Column(name="PurchaseDate")
+	@Column
 	@Field(analyze=Analyze.NO)
 	Date purchaseDate;
 	
