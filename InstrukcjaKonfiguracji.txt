@@ -1,0 +1,23 @@
+Wymagania programu:
+-zainstalowany  MySQL Server  8.0 
+-zaistalowany MySql Workbench 8.0 
+Program testowano na  wersji 8.0.15(mysql-installer-community-8.0.15.0- podczas instalacji wybierz  Developer default)
+
+Instrukcja konfiguracji programu jest oparta MySQLWorkBench 8.0
+
+1) Uruchom MySQL WorkBench-> zaloguj sie jako root ->File->OpenSQL Script..->otworz plik cfgexpansemanager.sql
+->uruchom skrypt klikaj¹c ikone b³yskawicy(trzecia ikona od lewej),zostanie utworzona baza danych expenses z jednym testowym wierszem
+UWAGA!! je¿eli masz ju¿ bazê danych expenses zostanie USUNIÊTA! i na jej miejscu powstanie nowa baza.
+
+2)Wybierz z menu: Server->Users and Privileges->Add Account->
+		W zak³adce Login
+		Login name: expensemanager
+		Authentication Type: Standard
+		Limit to Host Matching: localhost
+		Password:12345678
+		Confirm Password:12345678
+
+->W zak³adce Schema Privileges->Add entry...->Selected schema->wybierz expenses->OK->select "All"->Applay
+na liœcie uzytkowników po lewj powinno pojawic siê utworzone konto.
+
+
