@@ -20,7 +20,9 @@ import com.myproject.manager.pojo.Product;
 import com.myproject.manager.pojo.Shop;
 
 
-
+/*
+ * klasa uzywa metod interfejsu Dao do pobierania i przetwarzanie danych
+ */
 public class HibernateDao implements Dao{
 	
 	@Autowired
