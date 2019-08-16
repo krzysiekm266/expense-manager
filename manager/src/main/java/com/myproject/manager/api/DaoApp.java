@@ -13,11 +13,4 @@ public interface DaoApp {
 	List<?> updateRow(String entity,String fieldName,Object fieldValue,String idName,Object idValue);
 	List<?> removeRow(long id);
 	
-	int  countRows();
-	double getExpensesSummary();
-
-	
-	
-
-
 }

@@ -264,35 +264,6 @@ public class HibernateDao implements DaoApp{
 		return searchList;
 	}
 
-	@Override
-	public int countRows() {
-		int rowCount=0;
-		try {
-			session = transactionManager.getSessionFactory().openSession();
-			session.beginTransaction();
-				Query<?> hibernateQuery = session.createQuery("FROM Product");
-				rowCount = hibernateQuery.list().size();
-			session.getTransaction().commit();		
-		}catch(HibernateException e) {
-			if(session.getTransaction()!=null) {
-				session.getTransaction().rollback();
-				//System.out.print("\nblad Massage: "+e.getMessage()+"\nCause: "+e.getCause());
-			}
-			JOptionPane.showMessageDialog(null,e.getMessage()+"\n"+e.getCause(),"Błąd ",JOptionPane.ERROR_MESSAGE);
-		}
-		finally {
-			if(session!=null) {
-				session.close();
-			}
-		}
-		return rowCount;
-	}
-
-	@Override
-	public double getExpensesSummary() {
-		return expensesSummary;
-	}
-
 	
 	
 
