@@ -1,15 +1,22 @@
 package com.myproject.manager.configuration;
 
+import java.text.DateFormat;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.Properties;
 import javax.swing.table.DefaultTableModel;
+
+import org.apache.lucene.document.DateTools;
 import org.apache.tomcat.dbcp.dbcp2.BasicDataSource;
+import org.springframework.asm.Label;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import com.myproject.manager.ManagerJTableModel;
-import com.myproject.manager.api.Dao;
+
+import com.myproject.manager.api.DaoApp;
 import com.myproject.manager.dao.HibernateDao;
 
 @Configuration
@@ -69,19 +76,30 @@ public class ManagerConfiguration {
 
     
     @Bean
-    public DefaultTableModel jTableModel() {
-    	ManagerJTableModel tableModel = new ManagerJTableModel();
-    	tableModel.addColumn("id");
-    	tableModel.addColumn("Nazwa produktu");
-    	tableModel.addColumn("Cena");
-    	tableModel.addColumn("Opis produktu");
-    	tableModel.addColumn("Data zakupu");
-    	tableModel.addColumn("Nazwa sklepu");
-    	return tableModel;
+    public DefaultTableModel dataBaseTableModel() {
+    	ManagerJTableModel dataBaseTableModel = new ManagerJTableModel();
+    	dataBaseTableModel.addColumn("id");
+    	dataBaseTableModel.addColumn("Nazwa produktu");
+    	dataBaseTableModel.addColumn("Cena");
+    	dataBaseTableModel.addColumn("Opis produktu");
+    	dataBaseTableModel.addColumn("Data zakupu");
+    	dataBaseTableModel.addColumn("Nazwa sklepu");
+    	return dataBaseTableModel;
     }
     
+    @Bean 
+    public DefaultTableModel infoTableModel() {
+    	ManagerJTableModel infoTableModel = new ManagerJTableModel();
+    	
+    	String[] months = {"","styczeń","luty","marzec","kwiecień","maj","czerwiec","lipiec","sierpień","wrzesień","pazdziernik","listopad","grudzień","Podsumowanie roczne"};
+    	infoTableModel.setColumnIdentifiers(months);
+    	
+    	
+    	return infoTableModel;
+    }
+	
    @Bean
-   public Dao hibernateDao() {
+   public DaoApp hibernateDao() {
 	   return new HibernateDao();
    }
     

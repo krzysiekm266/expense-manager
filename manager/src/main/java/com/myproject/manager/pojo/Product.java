@@ -66,7 +66,6 @@ public class Product {
 	private Shop shop;
 	
 	public Product() {}
-	
 	public Product( String name, double price,String description,Shop shop,Date purchaseDate) {
 		super();
 		

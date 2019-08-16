@@ -9,29 +9,45 @@ import java.awt.GridBagConstraints;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 
+import org.apache.lucene.document.DateTools;
+import org.apache.lucene.queries.function.valuesource.IfFunction;
+import org.hibernate.search.engine.integration.impl.SearchIntegration;
 import org.hibernate.type.YesNoType;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import com.myproject.manager.api.Dao;
+
+import com.myproject.manager.api.DaoApp;
 import com.myproject.manager.configuration.ManagerConfiguration;
 import com.myproject.manager.dao.HibernateDao;
+import com.myproject.manager.pojo.Product;
+
+import javax.naming.directory.SearchResult;
 import javax.swing.JButton;
 import java.awt.Insets;
 import javax.swing.JScrollPane;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.JViewport;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.SpinnerDateModel;
 import java.util.Date;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import javax.swing.ListSelectionModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -46,8 +62,9 @@ import java.awt.event.ActionEvent;
 
 public class AppWindow {
 	private final ApplicationContext ctx = new AnnotationConfigApplicationContext(ManagerConfiguration.class);
-	private final DefaultTableModel tableModel  = ctx.getBean(DefaultTableModel.class);
-	private final Dao hibernateDao = ctx.getBean(HibernateDao.class);
+	private final DefaultTableModel dataBaseTableModel  = ctx.getBean("dataBaseTableModel",DefaultTableModel.class);
+	private final DefaultTableModel infoTableModel = ctx.getBean("infoTableModel", DefaultTableModel.class);
+	private final DaoApp hibernateDao = ctx.getBean(HibernateDao.class);
 	
 	private JFrame frame;
 	private JTable tableExpenses;
@@ -63,6 +80,7 @@ public class AppWindow {
 	private String selectedShop;
 	private double selectedPrice;
 	private Date selectedDate;
+	private JTable tableInfo;
 	
 	
 
@@ -92,7 +110,54 @@ public class AppWindow {
 	
 	}
 	
-	/**
+	/*
+	 *wypelnia model danymi z wynikow wyszukiwamnia bazy danych 
+	 */
+	private  void  setDataBaseTableModelFromQueryResult(ListIterator<?> listIterator) {
+		//wyczysc model
+		while(dataBaseTableModel.getRowCount()!=0) {
+			dataBaseTableModel.removeRow(dataBaseTableModel.getRowCount()-1);
+		}
+				
+		//wypelnij model danymi
+		while(listIterator.hasNext()) {
+			Product product = (Product)listIterator.next();
+			dataBaseTableModel.addRow(new Object[] {
+				product.getId(),
+				product.getName(),
+				product.getPrice(),
+				product.getDescription(),
+				product.getPurchaseDate(),
+				product.getShop().getName()
+			});
+				
+		}
+		
+	}
+	/*
+	 * oblicza sume znalezionych produktow
+	 */
+	private double searchPriceSum(ListIterator<?> searchResults) {
+		double sum = 0;
+		
+		Map<String, Double> priceSum = new TreeMap<>();
+		@SuppressWarnings("unchecked")
+		ListIterator<Product> iter  = (ListIterator<Product>) searchResults;
+		iter.forEachRemaining(product ->{
+			double price = ((Product)product).getPrice();
+			priceSum.merge("SearchSummaryPrices",price ,Double::sum);
+		});
+		
+		if(priceSum.get("SearchSummaryPrices")!=null) {
+			sum = priceSum.get("SearchSummaryPrices");
+			DecimalFormat priceFormat = new DecimalFormat();
+			priceFormat.setMaximumFractionDigits(2);
+			sum = Double.valueOf(priceFormat.format(sum).replace(",", "."));
+		}
+		
+		return sum;
+	}
+	/** 
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
@@ -258,7 +323,7 @@ public class AppWindow {
 		panelSearchOptions.add(lblOptionDateMin, gbc_lblOptionDateMin);
 		
 		JSpinner spinnerDateMin = new JSpinner();
-		spinnerDateMin.setModel(new SpinnerDateModel(new Date(631152000000L), new Date(631152000000L), null, Calendar.DAY_OF_YEAR));
+		spinnerDateMin.setModel(new SpinnerDateModel(new Date(662688000000L), new Date(631152000000L), null, Calendar.DAY_OF_YEAR));
 		spinnerDateMin.setEditor(new JSpinner.DateEditor(spinnerDateMin, "dd/MM/yyyy"));
 		GridBagConstraints gbc_spinnerDateMin = new GridBagConstraints();
 		gbc_spinnerDateMin.fill = GridBagConstraints.HORIZONTAL;
@@ -377,12 +442,10 @@ public class AppWindow {
 		gbc_scrollPane.gridy = 3;
 		panelExpenses.add(scrollPane, gbc_scrollPane);
 		
-		tableExpenses = new JTable();
-		
-		
+		tableExpenses = new JTable();	
 		tableExpenses.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tableExpenses.setFillsViewportHeight(true);
-		tableExpenses.setModel(tableModel);
+		tableExpenses.setModel(dataBaseTableModel);
 		scrollPane.setViewportView(tableExpenses);
 		
 		
@@ -560,16 +623,30 @@ public class AppWindow {
 											, "Usuwanie zaznaczonego wiersza", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 					if(confirm == JOptionPane.YES_OPTION) {
 						int row = tableExpenses.getSelectedRow();
-						long id = (long)tableModel.getValueAt(row, 0);
-						hibernateDao.removeRow(id);
-						lblExpensesAllProductsValue.setText(String.valueOf(hibernateDao.rowsCount()));
-						int resultCount =  hibernateDao.search(textSearch.getText()
+						long id = (long)dataBaseTableModel.getValueAt(row, 0);
+						
+						List<?> removeResult =  hibernateDao.removeRow(id);
+						int allRows = 0;
+						if(removeResult != null) {
+							allRows = removeResult.size();
+						}
+						
+						List<?> searchResult =  hibernateDao.search(textSearch.getText()
 								,(double)spinnerPriceFrom.getValue()
 								,(double)spinnerPriceTo.getValue()
 								,(Date)spinnerDateMin.getValue()
 								,(Date)spinnerDateMax.getValue()
 							);
-						lblExpensesFindRowsValue.setText(String.valueOf(resultCount));
+						int searchResultCount = 0;
+						if(searchResult != null) {
+							searchResultCount = searchResult.size();
+							ListIterator<?> iter = searchResult.listIterator();
+							setDataBaseTableModelFromQueryResult(iter);
+						}
+						
+						
+						lblExpensesFindRowsValue.setText(String.valueOf(searchResultCount));
+						lblExpensesAllProductsValue.setText(String.valueOf(allRows));
 					}
 					
 				}
@@ -620,24 +697,37 @@ public class AppWindow {
 			 *  liczbe wszystkich wierszy w bazie
 			 */
 			btnSearch.addActionListener(e->{
-				
+				String summary="";
 				Date tempDateMin = (Date)spinnerDateMin.getValue();
 				tempDateMin.setTime(tempDateMin.getTime()+30000000);
 				
 				Date tempDateMax = (Date)spinnerDateMax.getValue();
-				tempDateMin.setTime(tempDateMin.getTime()+30000000);
+				tempDateMax.setTime(tempDateMax.getTime()+30000000);
 				
-				int result =  hibernateDao.search(textSearch.getText()
+				List<?> resultList =  hibernateDao.search(textSearch.getText()
 						,(double)spinnerPriceFrom.getValue()
 						,(double)spinnerPriceTo.getValue()
 						,(Date)spinnerDateMin.getValue()
 						,(Date)spinnerDateMax.getValue()
 						);
-			
-				String summary = Double.toString(hibernateDao.getExpensesSummary());
+				int result = 0;
+				if(resultList != null) {
+					ListIterator<?> iter = resultList.listIterator();
+					ListIterator<?> iter2 = resultList.listIterator();
+					result = resultList.size();
+					setDataBaseTableModelFromQueryResult(iter);
+					summary = String.valueOf(searchPriceSum(iter2));
+				}
+				
+				
 				lblExpensesSummaryValue.setText(summary);
 				lblExpensesFindRowsValue.setText(String.valueOf(result));
-				int allRows = hibernateDao.rowsCount();
+				
+				List<?> allRowsList = hibernateDao.getAllRows();
+				int allRows = 0;
+				if(allRowsList != null) {
+					allRows = allRowsList.size();
+				}
 				lblExpensesAllProductsValue.setText(String.valueOf(allRows));
 				
 			});
@@ -661,19 +751,28 @@ public class AppWindow {
 					
 				}
 				else {
+					//formatowanie moze zaokraglac = niedokladny wynik
 					Double price = (Double)spinnerPrice.getValue();
 					DecimalFormat df = new DecimalFormat();
-					df.setMaximumFractionDigits(2);	
+					//df.setMaximumFractionDigits(2);	
 					price = Double.valueOf(df.format(price).replace(",", "."));
 					
-					hibernateDao.addRow(textShop.getText(), textProductName.getText(), price, 
+					
+					List<?> resultList =  hibernateDao.addRow(textShop.getText(), textProductName.getText(), price, 
 														textProductDescription.getText(), (Date)spinnerDate.getValue());
-					int result = hibernateDao.showRows();
+					int result = 0;
+					if(resultList!=null) {
+						result = resultList.size();
+						ListIterator<?> iter = resultList.listIterator();
+						setDataBaseTableModelFromQueryResult(iter);
+					}
+					
 					lblExpensesAllProductsValue.setText(String.valueOf(result));
 					lblExpensesFindRowsValue.setText(String.valueOf(result));
 					textProductName.setText("");
+					
 				}
-				
+				btnSearch.doClick();
 			});
 			
 			/*
@@ -752,12 +851,12 @@ public class AppWindow {
 				
 					if(tableExpenses.getRowCount()>0 && tableExpenses.getSelectedRow()>=0) {
 						int row = tableExpenses.getSelectedRow();
-						selectedId = (long)tableModel.getValueAt(row, 0);
-						selectedProductName = (String)tableModel.getValueAt(row, 1);
-						selectedPrice = (double)tableModel.getValueAt(row, 2);
-						selectedProductDescription = (String)tableModel.getValueAt(row, 3);
-						selectedDate = (Date)tableModel.getValueAt(row, 4);
-						selectedShop = (String)tableModel.getValueAt(row, 5);
+						selectedId = (long)dataBaseTableModel.getValueAt(row, 0);
+						selectedProductName = (String)dataBaseTableModel.getValueAt(row, 1);
+						selectedPrice = (double)dataBaseTableModel.getValueAt(row, 2);
+						selectedProductDescription = (String)dataBaseTableModel.getValueAt(row, 3);
+						selectedDate = (Date)dataBaseTableModel.getValueAt(row, 4);
+						selectedShop = (String)dataBaseTableModel.getValueAt(row, 5);
 						
 						textProductName.setText(selectedProductName);
 						spinnerPrice.setValue(selectedPrice);
@@ -771,43 +870,56 @@ public class AppWindow {
 				
 				
 			});
+			
 			/*
 			 * klikniecie przycisku zapisywania(aktualizacji) danych po edycji
 			 * sprawdza czy jest wybrany jakis wiersz 
 			 * sprawdza czy zostaly dokonane zmiany wartosci edytowanych pol
-			 * (zmienione wartosci sa sa aktualizowane - pola sa sprawdzane i aktualizowane oddzielnie)
+			 * (zmienione wartosci sa  aktualizowane - pola sa sprawdzane i aktualizowane oddzielnie)
 			 * wyswietla wszystie wiersze bazy
 			 */
 			btnUpdateProduct.addActionListener(e->{
 				if(tableExpenses.getRowCount()>0 && tableExpenses.getSelectedRow()>=0) {
 					//int row = tableExpenses.getSelectedRow();
-					if(!textProductName.getText().equals(selectedProductName)) {
-						hibernateDao.updateRow("Product", "name", textProductName.getText(), "idproduct", selectedId);
-					}
-					
-					if(!textProductDescription.getText().equals(selectedProductDescription)) {
-						hibernateDao.updateRow("Product", "description", textProductDescription.getText(), "idproduct", selectedId);
-					}
-					
-					//do sprawdzenia
-					if(!textShop.getText().equals(selectedShop)) {
-						hibernateDao.updateRow("Product", "shop.nameShop", textShop.getText(), "idproduct", selectedId);
-					}
-					
-					//do sprawadzenia
-					if(!spinnerPrice.getValue().equals(selectedPrice) ) {
-						hibernateDao.updateRow("Product", "price", spinnerPrice.getValue(), "idproduct", selectedId);
-					}
-					
-					//do sprawdzenia
-					if(!spinnerDate.getValue().equals(selectedDate)) {
+					if(!textProductName.getText().isEmpty() && !textProductDescription.getText().isEmpty() && 
+							!textShop.getText().isEmpty() && (double)spinnerPrice.getValue() != 0) {
 						
-						Date temp = (Date)spinnerDate.getValue();
-						temp.setTime(temp.getTime()+30000000);
-						frame.setTitle(temp.toString());
-						hibernateDao.updateRow("Product", "purchaseDate", temp, "idproduct", selectedId);
+						if(!textProductName.getText().equals(selectedProductName)) {
+							hibernateDao.updateRow("Product", "name", textProductName.getText(), "idproduct", selectedId);
+						}
+						
+						if(!textProductDescription.getText().equals(selectedProductDescription)) {
+							hibernateDao.updateRow("Product", "description", textProductDescription.getText(), "idproduct", selectedId);
+						}
+						
+						//do sprawdzenia
+						if(!textShop.getText().equals(selectedShop)) {
+							hibernateDao.updateRow("Product", "shop.nameShop", textShop.getText(), "idproduct", selectedId);
+						}
+						
+						//do sprawadzenia
+						if(!spinnerPrice.getValue().equals(selectedPrice) ) {
+							hibernateDao.updateRow("Product", "price", spinnerPrice.getValue(), "idproduct", selectedId);
+						}
+						
+						//do sprawdzenia
+						if(!spinnerDate.getValue().equals(selectedDate)) {
+							
+							Date temp = (Date)spinnerDate.getValue();
+							temp.setTime(temp.getTime()+30000000);
+							frame.setTitle(temp.toString());
+							hibernateDao.updateRow("Product", "purchaseDate", temp, "idproduct", selectedId);
+						}
 					}
-					hibernateDao.showRows();
+					else {
+						JOptionPane.showMessageDialog(frame, "Nie można zapisać zmian!", "Błąd edycji", JOptionPane.ERROR_MESSAGE);
+					}
+					
+					List<?> resultList =  hibernateDao.getAllRows();
+					if(resultList != null) {
+						ListIterator<?> iter = resultList.listIterator();
+						setDataBaseTableModelFromQueryResult(iter);
+					}
 					//poprawic wyswietlania daty i wybieranie wiersza po edycji
 				}
 			});
@@ -821,12 +933,12 @@ public class AppWindow {
 				public void mouseClicked(MouseEvent e) {
 					if(tableExpenses.getRowCount()>0 && tableExpenses.getSelectedRow()>=0) {
 						int row = tableExpenses.getSelectedRow();
-						selectedId = (long)tableModel.getValueAt(row, 0);
-						selectedProductName = (String)tableModel.getValueAt(row, 1);
-						selectedPrice = (double)tableModel.getValueAt(row, 2);
-						selectedProductDescription = (String)tableModel.getValueAt(row, 3);
-						selectedDate = (Date)tableModel.getValueAt(row, 4);
-						selectedShop = (String)tableModel.getValueAt(row, 5);
+						selectedId = (long)dataBaseTableModel.getValueAt(row, 0);
+						selectedProductName = (String)dataBaseTableModel.getValueAt(row, 1);
+						selectedPrice = (double)dataBaseTableModel.getValueAt(row, 2);
+						selectedProductDescription = (String)dataBaseTableModel.getValueAt(row, 3);
+						selectedDate = (Date)dataBaseTableModel.getValueAt(row, 4);
+						selectedShop = (String)dataBaseTableModel.getValueAt(row, 5);
 						
 						if(editModeOn==true) {
 							textProductName.setText(selectedProductName);
@@ -850,11 +962,112 @@ public class AppWindow {
 		JPanel panelInfo = new JPanel();
 		tabbedPane.addTab("Podsumowanie", null, panelInfo, null);
 		GridBagLayout gbl_panelInfo = new GridBagLayout();
-		gbl_panelInfo.columnWidths = new int[]{0, 0, 0, 0, 0, 0};
-		gbl_panelInfo.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gbl_panelInfo.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0, 1.0, Double.MIN_VALUE};
-		gbl_panelInfo.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panelInfo.columnWidths = new int[]{0, 0};
+		gbl_panelInfo.rowHeights = new int[]{0, 0};
+		gbl_panelInfo.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+		gbl_panelInfo.rowWeights = new double[]{1.0, Double.MIN_VALUE};
 		panelInfo.setLayout(gbl_panelInfo);
+		
+		JScrollPane scrollPaneInfo = new JScrollPane();
+		GridBagConstraints gbc_scrollPaneInfo = new GridBagConstraints();
+		gbc_scrollPaneInfo.weighty = 100.0;
+		gbc_scrollPaneInfo.weightx = 100.0;
+		gbc_scrollPaneInfo.fill = GridBagConstraints.BOTH;
+		gbc_scrollPaneInfo.gridx = 0;
+		gbc_scrollPaneInfo.gridy = 0;
+		panelInfo.add(scrollPaneInfo, gbc_scrollPaneInfo);
+		
+		tableInfo = new JTable();
+		tableInfo.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		tableInfo.setFillsViewportHeight(true);
+		tableInfo.setModel(infoTableModel);
+		scrollPaneInfo.setViewportView(tableInfo);
+		
+		/*
+		 * klikniecie zakladki panelu
+		 * sumuje ceny z miesiecy dla danego roku
+		 * wypelnia model tabeli danymi
+		 */
+		tabbedPane.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(tabbedPane.getSelectedIndex() == 1) {
+					//czysci model podsumowania 
+					while(infoTableModel.getRowCount()!=0) {
+						infoTableModel.removeRow(infoTableModel.getRowCount()-1);
+						
+					}
+					//tworzy mape na podstawie wynikow wyszukiwania
+					List<?> allRows = hibernateDao.getAllRows();
+					Map<String, Double> prices = new TreeMap<>();
+					ListIterator<?> iter =  allRows.listIterator();
+					iter.forEachRemaining(listItem ->{ 
+						//System.out.print("\nData zakupu: "+((Product)listItem).getPurchaseDate());
+						Product product = (Product)listItem;
+						double price = product.getPrice();
+						Date purchaseDate = product.getPurchaseDate();
+						String key = DateTools.dateToString(purchaseDate, DateTools.Resolution.MONTH);
+						prices.merge(key, price, Double::sum);
+					});
+					//wypelnia model tabeli podsumowania danymi z mapy 
+					prices.forEach((dateKey,priceSum)->{ try {
+						boolean yearIdExist = false;
+						Date tempDate = DateTools.stringToDate(dateKey);
+						Instant instant = tempDate.toInstant();
+						LocalDate localdate = LocalDateTime.ofInstant(instant, ZoneId.systemDefault()).toLocalDate();
+						int month = localdate.getMonthValue();
+						//System.out.print("\nkey: "+k+" value: "+v+" --- Data: "+tempDate);
+						Object[] row = new Object[14];
+						row[0] = dateKey.substring(0, 4);
+						DecimalFormat priceFormat = new DecimalFormat();
+						priceFormat.setMaximumFractionDigits(2);
+						row[month] = Double.valueOf(priceFormat.format(priceSum).replace(",","."));
+						//sprawdza czy ostatnia kolumna wiersza nie jest null
+						if(row[13]==null) {
+							row[13] = 0.00;
+						}
+						//pobiera wartosc z kolumny podsumowania i zwieksza o wartosc z mapy(sume cen z danego miesiaca)
+						double summary = (double)row[13];
+						row[13] = summary + priceSum;
+						//sprawdza czy w modelu istnieje dany rok i aktualizuje lub dodaje  wiersz(pobiera dane z mapy)
+						for(int i=0;i<infoTableModel.getRowCount();i++) {
+							String yearModel = (String) infoTableModel.getValueAt(i, 0);
+							String yearMap = (String) row[0];
+							if(yearModel.equals(yearMap)) {
+								infoTableModel.setValueAt(row[month], i, month);
+								//sumuje  ceny ze wszystkich miesiecy zapisuje w ostatniej kolumnie wiersza w modelku
+								for(int j =1;j<13;j++) {
+									if(infoTableModel.getValueAt(i, j)!=null) {
+										summary += (double)infoTableModel.getValueAt(i, j);
+									}	
+								}
+								infoTableModel.setValueAt(summary,i, 13);
+								yearIdExist = true;
+								break;
+							}
+						}
+						if(!yearIdExist) {
+							infoTableModel.addRow(row);
+						}
+						
+						
+						
+					} catch (ParseException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}});
+					//JOptionPane.showMessageDialog(frame,"wykonano podsumowanie", "podsumowanie", JOptionPane.ERROR_MESSAGE);
+					
+				}
+				
+				
+			}
+		});
+		
+		
+		
+		
+		
 			
 		
 		
