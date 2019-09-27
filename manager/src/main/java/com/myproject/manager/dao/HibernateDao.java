@@ -1,30 +1,20 @@
 package com.myproject.manager.dao;
 
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Calendar;
+
 import java.util.Date;
 import java.util.List;
-import java.util.ListIterator;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-
-import org.apache.lucene.document.DateTools;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
-import org.hibernate.jdbc.Expectations;
 import org.hibernate.query.Query;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
 import org.hibernate.search.exception.EmptyQueryException;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
-
 import com.myproject.manager.api.DaoApp;
 import com.myproject.manager.pojo.Product;
 import com.myproject.manager.pojo.Shop;
@@ -38,18 +28,19 @@ public class HibernateDao implements DaoApp{
 	@Autowired
 	private DefaultTableModel dataBaseTableModel;
 	@Autowired
-	//@Qualifier("infoTableModel")
-	private DefaultTableModel infoTableModel;
-	@Autowired
 	private HibernateTransactionManager transactionManager;
 	private Session session=null;
 	private FullTextSession fullTextSession=null;
-	private double  expensesSummary=0;
+	
 	
 	public HibernateDao() {}
 	
 	
-	
+	/*
+	 * (non-Javadoc)
+	 * @see com.myproject.manager.api.DaoApp#addRow(java.lang.String, java.lang.String, double, java.lang.String, java.util.Date)
+	 */
+	@Override
 	public List<?> addRow(String shopName,String productName,double price,String productDescription,Date purchaseDate) {
 		List<?> list = null;
 		try {
@@ -80,6 +71,11 @@ public class HibernateDao implements DaoApp{
 		return list;
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see com.myproject.manager.api.DaoApp#removeRow(long)
+	 */
+	@Override
 	public List<?> removeRow(long idProduct) {
 		List<?> list =null;
 		try {
@@ -118,6 +114,11 @@ public class HibernateDao implements DaoApp{
 		return list;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.myproject.manager.api.DaoApp#updateRow(java.lang.String, java.lang.String, java.lang.Object, java.lang.String, java.lang.Object)
+	 */
+	@Override
 	public List<?> updateRow(String entity,String fieldName,Object fieldValue,String idName,Object idValue) {
 		List<?> updatedList = null;
 		try {
@@ -151,6 +152,11 @@ public class HibernateDao implements DaoApp{
 	}
 
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.myproject.manager.api.DaoApp#getAllRows()
+	 */
+	@Override
 	public List<?> getAllRows() {
 		List<?> allRows = null;
 		try {
@@ -178,6 +184,10 @@ public class HibernateDao implements DaoApp{
 	}
 
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.myproject.manager.api.DaoApp#search(java.lang.String, double, double, java.util.Date, java.util.Date)
+	 */
 	@Override
 	public List<?> search(String search,double minPrice,double maxPrice,Date minDate,Date maxDate) {
 		List<?> searchList=null;

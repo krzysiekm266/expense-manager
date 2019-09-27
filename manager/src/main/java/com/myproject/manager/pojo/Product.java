@@ -60,7 +60,7 @@ public class Product {
 	
 	@Column
 	@Field(analyze=Analyze.NO)
-	Date purchaseDate;
+	private Date purchaseDate;
 	
 	@IndexedEmbedded(depth=1)
 	private Shop shop;

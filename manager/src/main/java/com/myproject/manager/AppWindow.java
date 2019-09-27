@@ -849,23 +849,23 @@ public class AppWindow {
 				panelProductEdit.setVisible(true);
 				btnUpdateProduct.setVisible(true);
 				
-					if(tableExpenses.getRowCount()>0 && tableExpenses.getSelectedRow()>=0) {
-						int row = tableExpenses.getSelectedRow();
-						selectedId = (long)dataBaseTableModel.getValueAt(row, 0);
-						selectedProductName = (String)dataBaseTableModel.getValueAt(row, 1);
-						selectedPrice = (double)dataBaseTableModel.getValueAt(row, 2);
-						selectedProductDescription = (String)dataBaseTableModel.getValueAt(row, 3);
-						selectedDate = (Date)dataBaseTableModel.getValueAt(row, 4);
-						selectedShop = (String)dataBaseTableModel.getValueAt(row, 5);
+				if(tableExpenses.getRowCount()>0 && tableExpenses.getSelectedRow()>=0) {
+					int row = tableExpenses.getSelectedRow();
+					selectedId = (long)dataBaseTableModel.getValueAt(row, 0);
+					selectedProductName = (String)dataBaseTableModel.getValueAt(row, 1);
+					selectedPrice = (double)dataBaseTableModel.getValueAt(row, 2);
+					selectedProductDescription = (String)dataBaseTableModel.getValueAt(row, 3);
+					selectedDate = (Date)dataBaseTableModel.getValueAt(row, 4);
+					selectedShop = (String)dataBaseTableModel.getValueAt(row, 5);
 						
-						textProductName.setText(selectedProductName);
-						spinnerPrice.setValue(selectedPrice);
-						textProductDescription.setText(selectedProductDescription);
-						spinnerDate.setValue(selectedDate);
-						textShop.setText(selectedShop);			
+					textProductName.setText(selectedProductName);
+					spinnerPrice.setValue(selectedPrice);
+					textProductDescription.setText(selectedProductDescription);
+					spinnerDate.setValue(selectedDate);
+					textShop.setText(selectedShop);			
 						
 								
-					}
+				}
 					
 				
 				
@@ -892,17 +892,17 @@ public class AppWindow {
 							hibernateDao.updateRow("Product", "description", textProductDescription.getText(), "idproduct", selectedId);
 						}
 						
-						//do sprawdzenia
+						
 						if(!textShop.getText().equals(selectedShop)) {
 							hibernateDao.updateRow("Product", "shop.nameShop", textShop.getText(), "idproduct", selectedId);
 						}
 						
-						//do sprawadzenia
+						
 						if(!spinnerPrice.getValue().equals(selectedPrice) ) {
 							hibernateDao.updateRow("Product", "price", spinnerPrice.getValue(), "idproduct", selectedId);
 						}
 						
-						//do sprawdzenia
+						
 						if(!spinnerDate.getValue().equals(selectedDate)) {
 							
 							Date temp = (Date)spinnerDate.getValue();
@@ -945,14 +945,9 @@ public class AppWindow {
 							spinnerPrice.setValue(selectedPrice);
 							textProductDescription.setText(selectedProductDescription);
 							spinnerDate.setValue(selectedDate);
-							textShop.setText(selectedShop);
-							
-						}
-						
-						
-						
-					}
-					
+							textShop.setText(selectedShop);						
+						}								
+					}	
 				}
 			});
 			
@@ -1056,7 +1051,7 @@ public class AppWindow {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}});
-					//JOptionPane.showMessageDialog(frame,"wykonano podsumowanie", "podsumowanie", JOptionPane.ERROR_MESSAGE);
+					
 					
 				}
 				
